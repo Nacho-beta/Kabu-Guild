@@ -5,13 +5,12 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     // Global Data
-    public Vector2 speed = new Vector2(16, 16);
-    public bool facing_left = false;
-
-    // Start is called before the first frame update
+    private Vector2 speed = new Vector2(16, 16);
+    private bool facing_left = false;
+    private Rigidbody2D rigid_body;
 
     // Update is called once per frame
-    void Update()
+    public void move()
     {
         // Local Data
         float input_x = Input.GetAxis("Horizontal");
@@ -38,5 +37,14 @@ public class Movement : MonoBehaviour
         move = new Vector3(speed.x * input_x, speed.y * input_y, 0);
         move *= Time.deltaTime;
         transform.Translate(move);
+    }
+
+    void check_collision(Rigidbody2D rb)
+    {
+        // Data
+
+        // Function
+        rigid_body = rb;
+
     }
 }
