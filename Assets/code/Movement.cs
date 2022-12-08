@@ -4,47 +4,91 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-    // Global Data
-    private Vector2 speed = new Vector2(16, 16);
-    private bool facing_left = false;
-    private Rigidbody2D rigid_body;
+    // Parameters
+    private float speed = 5f;    
+    
 
-    // Update is called once per frame
-    public void move()
+    // Getters & Setters
+    public void setSpeed(float set_speed) => speed = set_speed;
+
+    // Methods
+    /*
+     * Method: Move
+     * Move the actor around the map
+     */
+    public void move(ref Vector2 position)
     {
         // Local Data
         float input_x = Input.GetAxis("Horizontal");
         float input_y = Input.GetAxis("Vertical");
 
-        Vector3 move,
-                scale_flip = transform.localScale;
+        Vector2 move = new Vector2(position.x, position.y);
 
-        // Function
-            //Facing
-        if(input_x > 0 & facing_left) // If facing left and movement right, flip
+        // Move object
+        if (input_x != 0.0f)
         {
-            scale_flip.x *= -1;
-            transform.localScale = scale_flip;
-            facing_left = false;
-        } else if(input_x < 0 & !facing_left) // If facing right and movement left, flip
+            move.x += speed*input_x;
+        }
+        else if (input_y!= 0.0f)
         {
-            scale_flip.x *= -1;
-            transform.localScale = scale_flip;
-            facing_left = true;
+            move.y += speed*input_y;
         }
 
-            // Movement
-        move = new Vector3(speed.x * input_x, speed.y * input_y, 0);
-        move *= Time.deltaTime;
-        transform.Translate(move);
+        if (input_x != 0.0f | input_y != 0.0f)
+        {
+            if (!checkCollision(position, move))
+            {
+                transform.position = Vector2.MoveTowards(position, move, speed * Time.deltaTime);
+                position = transform.position;
+            }            
+        }            
     }
 
-    void check_collision(Rigidbody2D rb)
+    /*
+     * Method: Facing
+     * Determinate the facing of actor, and change sprite
+     */
+    public void facing(ref bool facing_left)
     {
-        // Data
+        // Local Data
+        Vector3 scale_flip = transform.localScale;
+
+        float input_x = Input.GetAxis("Horizontal");
 
         // Function
-        rigid_body = rb;
+        if(input_x != 0)
+        {
+            if (input_x > 0 & facing_left) // If facing left and movement right, flip
+            {
+                scale_flip.x *= -1;
+                transform.localScale = scale_flip;
+                facing_left = false;
+            }
+            else if (input_x < 0 & !facing_left) // If facing right and movement left, flip
+            {
+                scale_flip.x *= -1;
+                transform.localScale = scale_flip;
+                facing_left = true;
+            }
+        }        
+    }
 
+    /*
+     * Method: Collision detect
+     * Determinate the facing of actor, and change sprite
+     */
+    private bool checkCollision(Vector2 position, Vector2 destination)
+    {
+        RaycastHit2D hit;
+
+        LayerMask mask_wall = LayerMask.GetMask("Wall");
+
+        hit = Physics2D.Raycast(position, destination, 0.25f, mask_wall);
+        if(hit.point != Vector2.zero )
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -12,7 +13,7 @@ TagManager:
   - Water
   - UI
   - World_blocking
-  - 
+  - Wall
   - 
   - 
   - Character
@@ -43,6 +44,9 @@ TagManager:
     locked: 0
   - name: Floor
     uniqueID: 2706097409
+    locked: 0
+  - name: Wall
+    uniqueID: 2864492245
     locked: 0
   - name: Player
     uniqueID: 2469208557
