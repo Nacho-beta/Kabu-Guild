@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     private AgentEnum agents;
+    static private bool player_turn = true;
 
     // Start is called before the first frame update
     void Start()
@@ -14,13 +15,34 @@ public class GameManager : MonoBehaviour
 
     static public bool canMove(string agent_name)
     {
-        if(AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Player) 
+
+        if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Player)
         {
-            return true;
+            if (player_turn)
+            {
+                return true;
+            }
         }
-        else
+        else if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Enemy)
         {
-            return false;
+            if (!player_turn)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    static public void endTurn(string agent_name)
+    {
+        if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Player)
+        {
+            player_turn = false;
+        }
+        else if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Enemy)
+        {
+            player_turn = true;
         }
     }
 }

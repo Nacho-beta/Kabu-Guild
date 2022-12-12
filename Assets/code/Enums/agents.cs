@@ -16,7 +16,10 @@ public class AgentEnum : MonoBehaviour
 			case "Player":
 				get_agent = Agent.Player;
 				break;
-			default:
+            case "Enemy":
+                get_agent = Agent.Enemy;
+                break;
+            default:
 				get_agent = Agent.Null;
 				break;
 		}

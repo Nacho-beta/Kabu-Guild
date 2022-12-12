@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Wall
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - World_blocking
   - Wall
   - 
-  - 
+  - Enemy
   - Character
   - 
   - 

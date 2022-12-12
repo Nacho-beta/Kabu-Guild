@@ -15,45 +15,48 @@ public class Movement : MonoBehaviour
     /*
      * Method: Move
      * Move the actor around the map
+     * Return: Bool indicate if collision happen or not
      */
-    public void move(ref Vector2 position)
+    public bool move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
     {
         // Local Data
-        float input_x = Input.GetAxis("Horizontal");
-        float input_y = Input.GetAxis("Vertical");
-
         Vector2 move = new Vector2(position.x, position.y);
 
+        //Facing
+        this.facing(ref facing_left, direction.x);
+
         // Move object
-        if (input_x != 0.0f)
+        
+        if (direction.x != 0.0f)
         {
-            move.x += speed*input_x;
+            move.x += speed*direction.x;
         }
-        else if (input_y!= 0.0f)
+        else if (direction.y!= 0.0f)
         {
-            move.y += speed*input_y;
+            move.y += speed*direction.y;
         }
 
-        if (input_x != 0.0f | input_y != 0.0f)
+        if (direction.x != 0.0f | direction.y != 0.0f)
         {
-            if (!checkCollision(position, move))
+            if (!checkCollision(position, move, name_agent))
             {
                 transform.position = Vector2.MoveTowards(position, move, speed * Time.deltaTime);
                 position = transform.position;
+                return true;
             }            
-        }            
+        }
+
+        return false;
     }
 
     /*
      * Method: Facing
      * Determinate the facing of actor, and change sprite
      */
-    public void facing(ref bool facing_left)
+    public void facing(ref bool facing_left, float input_x)
     {
         // Local Data
         Vector3 scale_flip = transform.localScale;
-
-        float input_x = Input.GetAxis("Horizontal");
 
         // Function
         if(input_x != 0)
@@ -77,14 +80,26 @@ public class Movement : MonoBehaviour
      * Method: Collision detect
      * Determinate the facing of actor, and change sprite
      */
-    private bool checkCollision(Vector2 position, Vector2 destination)
+    private bool checkCollision(Vector2 position, Vector2 destination, string name_agent)
     {
         RaycastHit2D hit;
+        Vector2 direction = destination - position;
+        LayerMask mask_wall = LayerMask.GetMask("Wall", "Enemy");
 
-        LayerMask mask_wall = LayerMask.GetMask("Wall");
+        switch (AgentEnum.getAgent(name_agent))
+        {
+            case AgentEnum.Agent.Player:
+                mask_wall = LayerMask.GetMask("Wall", "Enemy");
+                break;
+            case AgentEnum.Agent.Enemy:
+                mask_wall = LayerMask.GetMask("Wall", "Player");
+                break;
+            default:
+                break;
+        }        
 
-        hit = Physics2D.Raycast(position, destination, 0.25f, mask_wall);
-        if(hit.point != Vector2.zero )
+        hit = Physics2D.Raycast(position, direction, 0.5f, mask_wall);
+        if(hit.collider != null )
         {
             return true;
         }

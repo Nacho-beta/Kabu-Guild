@@ -22,8 +22,8 @@ public class Player : MonoBehaviour
     // facing : Bool that indicate if is facing to left or right
     private bool facing_left;
 
-    private Rigidbody2D rigid_body;
-    private BoxCollider2D hitbox;
+   // private Rigidbody2D rigid_body;
+   // private BoxCollider2D hitbox;
 
 
     /*
@@ -42,8 +42,6 @@ public class Player : MonoBehaviour
         facing_left = false;
 
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
-        rigid_body = gameObject.GetComponent(typeof(Rigidbody2D)) as Rigidbody2D;
-        // hitbox = GetComponent<BoxCollider2D>();
     }
 
     /*
@@ -52,12 +50,43 @@ public class Player : MonoBehaviour
      */
     void Update()
     {
+        float input_x = Input.GetAxis("Horizontal");
+        float input_y = Input.GetAxis("Vertical");
+        Vector2 destination = new Vector2();
+
         if (GameManager.canMove(name_agent))
         {
-            // Determinates the facing
-            move.facing(ref facing_left);            
+            destination.x = input_x;
+            destination.y = input_y;
 
-            move.move(ref position);
+            if(destination != Vector2.zero) 
+            {
+                move.move(ref position, destination, ref facing_left, name_agent);
+                
+            }            
+        }
+
+        GameManager.endTurn(name_agent);
+    }
+
+    /*
+     * WaitForKey
+     * Wait to the key is pressed
+     */
+    private IEnumerator waitForKey()
+    {
+        bool done = false;
+        while (!done)
+        {
+            if (Input.GetKeyDown(KeyCode.W) | Input.GetKeyDown(KeyCode.UpArrow) |
+                Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.LeftArrow) |
+                Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.RightArrow) |
+                Input.GetKeyDown(KeyCode.S) | Input.GetKeyDown(KeyCode.DownArrow)
+                )
+            {
+                done = true;
+            }
+            yield return null;
         }
     }
 }
