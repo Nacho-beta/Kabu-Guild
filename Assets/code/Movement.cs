@@ -21,14 +21,11 @@ public class Movement : MonoBehaviour
     {
         // Local Data
         Vector2 move = new Vector2(position.x, position.y);
-
-        //Facing
-        this.facing(ref facing_left, direction.x);
-
-        // Move object
         
+        // Move object        
         if (direction.x != 0.0f)
         {
+            this.facing(ref facing_left, direction.x);
             move.x += speed*direction.x;
         }
         else if (direction.y!= 0.0f)
@@ -42,8 +39,11 @@ public class Movement : MonoBehaviour
             {
                 transform.position = Vector2.MoveTowards(position, move, speed * Time.deltaTime);
                 position = transform.position;
+            } else
+            {
+                print("Choco");
                 return true;
-            }            
+            }
         }
 
         return false;
@@ -84,7 +84,7 @@ public class Movement : MonoBehaviour
     {
         RaycastHit2D hit;
         Vector2 direction = destination - position;
-        LayerMask mask_wall = LayerMask.GetMask("Wall", "Enemy");
+        LayerMask mask_wall = new LayerMask();
 
         switch (AgentEnum.getAgent(name_agent))
         {

@@ -22,6 +22,9 @@ public class Enemy : MonoBehaviour
     // facing : Bool that indicate if is facing to left or right
     private bool facing_left;
 
+    // collision: Bool indicate if collision happen
+    bool stop;
+
     // path: Stack with direction for pathing
     private Queue<Vector2> path;
 
@@ -29,7 +32,7 @@ public class Enemy : MonoBehaviour
     private Vector2 speed_move = new Vector2(1, 1);
 
     // next_step: Next position for pathing
-    Vector2 next_step;
+    private Vector2 next_step;
 
 
     /*
@@ -44,8 +47,9 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         name_agent = "Enemy";
-        position = new Vector2(1, 0);
+        position = new Vector2(3, 0);
         facing_left = true;
+        stop = false;
         path = new Queue<Vector2>();
         next_step = new Vector2(1, 0);
 
@@ -64,49 +68,28 @@ public class Enemy : MonoBehaviour
 
         if (GameManager.canMove(name_agent))
         {
-            if (next_step.x != position.x | next_step.y != position.y)
-            {                
-                if (next_step.x < position.x)
-                {
-                    speed_move.x = -1;
-                }
-                else if (next_step.x > position.x)
-                {
-                    speed_move.x = 1;
-                }
-                else
-                {
-                    speed_move.x = 0;
-                }
-
-                if (next_step.y < position.y)
-                {
-                    speed_move.y = -1;
-                }
-                else if (next_step.y > position.y)
-                {
-                    speed_move.y = 1;
-                }
-                else
-                {
-                    speed_move.y = 0;
-                }
-
-                collision = move.move(ref position, speed_move, ref facing_left, name_agent);
-            } else
+            if (!stop)
             {
-                next_step = path.Dequeue();
-                path.Enqueue(next_step);
-            }
-                           
-            print("Posicion: " + position);
-            print("Voy a " + next_step);
-            print("Con dirección " + speed_move);
+                this.fillDirection();
 
-            
+                if (speed_move.x == 0 & speed_move.y == 0)
+                {
+                    next_step = path.Dequeue();
+                    path.Enqueue(next_step);
+                } else
+                {
+                    collision = move.move(ref position, speed_move, ref facing_left, name_agent);
+                }
+
+                if (collision)
+                {
+                    stop = true;
+                }
+            }
 
             GameManager.endTurn(name_agent);
         }
+
     }
 
     /*
@@ -119,28 +102,53 @@ public class Enemy : MonoBehaviour
 
         path.Enqueue(new_point);
 
-        new_point.x = 1;
-        new_point.y = 0;
-        path.Enqueue(new_point);
+        for (int i = 0; i < 8; i++)
+        {
+            new_point.x = 3;
+            new_point.y = i;
+            path.Enqueue(new_point);
+        }
 
-        new_point.x = 1;
-        new_point.y = 1;
-        path.Enqueue(new_point);
+        for (int i = 8; i >= 0; i--)
+        {
+            new_point.x = 3;
+            new_point.y = i;
+            path.Enqueue(new_point);
+        }
+    }
 
-        new_point.x = 0;
-        new_point.y = 1;
-        path.Enqueue(new_point);
+    /*
+     * Private: fillDirection
+     * Fill value in vector direction
+     */
+    void fillDirection()
+    {
+        // Direction in Axis X
+        if (next_step.x < (position.x - 0.05f))
+        {
+            speed_move.x = -1;
+        }
+        else if (next_step.x > (position.x + 0.05f))
+        {
+            speed_move.x = 1;
+        }
+        else
+        {
+            speed_move.x = 0;
+        }
 
-        new_point.x = -1;
-        new_point.y = 1;
-        path.Enqueue(new_point);
-
-        new_point.x = -1;
-        new_point.y = 0;
-        path.Enqueue(new_point);
-
-        new_point.x = 1;
-        new_point.y = 0;
-        path.Enqueue(new_point);
+        // Direction in Axis Y
+        if (next_step.y < position.y - 0.05f)
+        {
+            speed_move.y = -1;
+        }
+        else if (next_step.y > position.y + 0.05f)
+        {
+            speed_move.y = 1;
+        }
+        else
+        {
+            speed_move.y = 0;
+        }
     }
 }
