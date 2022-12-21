@@ -5,34 +5,25 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     /*
-     * ------------------------------------------------------
-     * Parameters
-     * ------------------------------------------------------
+     * Atributes of enemy
      */
+    // Private
+    private string name_agent;  // Name of the Agent
+    private bool facing_left;   // Bool indicate if is facing to left or right
+    private bool stop;          // Bool indicate if is in movement
+    private float hp;
 
-    // name_agent : Name of the Agent
-    private string name_agent;
+    private Vector2 speed_move; // Vector for direction
+    private Vector2 next_step;  // Next position for pathing
 
-    // move : Method to move to a position
-    private Movement move;
+    private Queue<Vector2> path;// Queue for pathing
 
-    // position : Vector3 (x,y,z) for position of agent
-    public Vector2 position;
+    private Movement move;      // Class for move to a position
+    
+    // Protected
 
-    // facing : Bool that indicate if is facing to left or right
-    private bool facing_left;
-
-    // collision: Bool indicate if collision happen
-    bool stop;
-
-    // path: Stack with direction for pathing
-    private Queue<Vector2> path;
-
-    // speed to move: Constant needed for move method
-    private Vector2 speed_move = new Vector2(1, 1);
-
-    // next_step: Next position for pathing
-    private Vector2 next_step;
+    // Public
+    public Vector2 position; //Vector3(x, y, z) for position of agent
 
 
     /*
@@ -40,18 +31,52 @@ public class Enemy : MonoBehaviour
      * Methods
      * ------------------------------------------------------
      */
+
+    // ---------- Static ---------------------------
+    public static Enemy getEnemyDefault()
+    {
+        Enemy ret_enemy = new Enemy();
+
+        ret_enemy.name_agent = "Enemy";
+        ret_enemy.facing_left = true;
+        ret_enemy.stop = false;
+        ret_enemy.hp = 15.0f;
+
+        ret_enemy.path = new Queue<Vector2>();
+        ret_enemy.next_step = new Vector2(1, 0);
+        ret_enemy.speed_move = new Vector2(1, 1);
+        ret_enemy.position = new Vector2(3, 0);
+
+        ret_enemy.fillPath();
+
+        return ret_enemy;
+    }
+
+
+    // ---------- Getters & Setters ----------------
+    // GetHP : Return actual hp
+    public float getHp()
+    {
+        return hp;
+    }
+
+
+    // ---------- Public ---------------------------
     /*
      * Start
      * Start is called before the first frame update
      */
     void Start()
     {
-        name_agent = "Enemy";
-        position = new Vector2(3, 0);
+        name_agent = "Enemy";        
         facing_left = true;
         stop = false;
+        hp = 15.0f;
+
         path = new Queue<Vector2>();
         next_step = new Vector2(1, 0);
+        speed_move = new Vector2(1, 1);
+        position = new Vector2(3, 0);
 
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
 
@@ -78,12 +103,13 @@ public class Enemy : MonoBehaviour
                     path.Enqueue(next_step);
                 } else
                 {
-                    collision = move.move(ref position, speed_move, ref facing_left, name_agent);
+                    collision = move.Move(ref position, speed_move, ref facing_left, name_agent);
                 }
 
                 if (collision)
                 {
                     stop = true;
+                    hp = 0.0f;
                 }
             }
 

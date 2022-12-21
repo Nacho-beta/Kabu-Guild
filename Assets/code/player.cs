@@ -9,6 +9,8 @@ public class Player : MonoBehaviour
      * Parameters
      * ------------------------------------------------------
      */
+    private int max_move = 6;   // Max of move can be made
+    private int move_made = 0;  // Actual move that have been made
     
     // name_agent : Name of the Agent
     private string name_agent;
@@ -22,8 +24,8 @@ public class Player : MonoBehaviour
     // facing : Bool that indicate if is facing to left or right
     private bool facing_left;
 
-   // private Rigidbody2D rigid_body;
-   // private BoxCollider2D hitbox;
+    // private Rigidbody2D rigid_body;
+    // private BoxCollider2D hitbox;
 
 
     /*
@@ -31,6 +33,13 @@ public class Player : MonoBehaviour
      * Methods
      * ------------------------------------------------------
      */
+    /*
+     * Getters & Setters
+     */
+    // Get Position
+    public Vector2 GetPosition() { return position; }
+
+
     /*
      * Start
      * Start is called before the first frame update
@@ -44,49 +53,46 @@ public class Player : MonoBehaviour
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
     }
 
-    /*
-     * Update
-     * Update is called once per frame
-     */
-    void Update()
+    // SetAction : Return action selected by player
+    public Actions SetAction()
     {
-        float input_x = Input.GetAxis("Horizontal");
-        float input_y = Input.GetAxis("Vertical");
-        Vector2 destination = new Vector2();
-
-        if (GameManager.canMove(name_agent))
+        if (move_made < max_move)
         {
-            destination.x = input_x;
-            destination.y = input_y;
+            return Actions.move;
+        }
+        else
+        {
+            return Actions.none;
+        }
+    }
+    
 
-            if(destination != Vector2.zero) 
-            {
-                move.move(ref position, destination, ref facing_left, name_agent);
-                
-            }            
+    // Move: Move agent using control
+    public bool Move()
+    {
+        float input_x = 0.0f,
+              input_y = 0.0f;
+        Vector2 target = new Vector2(0,0);
+
+        input_x = Input.GetAxis("Horizontal");
+        input_y = Input.GetAxis("Vertical");
+
+        if (input_x != 0.0f)
+        {
+            target.x = 1.0f;
+        } else if(input_y != 0.0f)
+        {
+            target.y = 1.0f;
         }
 
-        GameManager.endTurn(name_agent);
-    }
-
-    /*
-     * WaitForKey
-     * Wait to the key is pressed
-     */
-    private IEnumerator waitForKey()
-    {
-        bool done = false;
-        while (!done)
+        if(target != Vector2.zero)
         {
-            if (Input.GetKeyDown(KeyCode.W) | Input.GetKeyDown(KeyCode.UpArrow) |
-                Input.GetKeyDown(KeyCode.A) | Input.GetKeyDown(KeyCode.LeftArrow) |
-                Input.GetKeyDown(KeyCode.D) | Input.GetKeyDown(KeyCode.RightArrow) |
-                Input.GetKeyDown(KeyCode.S) | Input.GetKeyDown(KeyCode.DownArrow)
-                )
-            {
-                done = true;
-            }
-            yield return null;
+            this.move.Move(ref position, target, ref facing_left, name_agent);
+            this.move_made++;
+            return true;
+        } else
+        {
+            return false;
         }
     }
 }

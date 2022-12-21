@@ -17,7 +17,7 @@ public class Movement : MonoBehaviour
      * Move the actor around the map
      * Return: Bool indicate if collision happen or not
      */
-    public bool move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
+    public bool Move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
     {
         // Local Data
         Vector2 move = new Vector2(position.x, position.y);
