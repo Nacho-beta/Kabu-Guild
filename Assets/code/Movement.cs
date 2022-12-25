@@ -41,7 +41,6 @@ public class Movement : MonoBehaviour
                 position = transform.position;
             } else
             {
-                print("Choco");
                 return true;
             }
         }

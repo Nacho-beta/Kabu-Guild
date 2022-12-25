@@ -9,12 +9,12 @@ public class Player : MonoBehaviour
      * Parameters
      * ------------------------------------------------------
      */
-    private int max_move = 6;   // Max of move can be made
-    private int move_made = 0;  // Actual move that have been made
-    
-    // name_agent : Name of the Agent
-    private string name_agent;
-    
+    private int max_move = 6;       // Max of move can be made
+    private int move_made = 0;      // Actual move that have been made
+    private float   input_x = 0.0f,   // Input in horizontal axis
+                    input_y = 0.0f; // Input in vertical axis
+    private string name_agent;      // name_agent : Name of the Agent
+
     // move : Method to move to a position
     private Movement move;
 
@@ -23,9 +23,6 @@ public class Player : MonoBehaviour
 
     // facing : Bool that indicate if is facing to left or right
     private bool facing_left;
-
-    // private Rigidbody2D rigid_body;
-    // private BoxCollider2D hitbox;
 
 
     /*
@@ -56,43 +53,61 @@ public class Player : MonoBehaviour
     // SetAction : Return action selected by player
     public Actions SetAction()
     {
-        if (move_made < max_move)
-        {
-            return Actions.move;
-        }
-        else
-        {
-            return Actions.none;
-        }
+        return Actions.move;
     }
     
 
     // Move: Move agent using control
     public bool Move()
     {
-        float input_x = 0.0f,
-              input_y = 0.0f;
-        Vector2 target = new Vector2(0,0);
+        Vector2 old_pos = new Vector2(position.x, position.y),
+                target = new Vector2(0, 0);
 
-        input_x = Input.GetAxis("Horizontal");
-        input_y = Input.GetAxis("Vertical");
+        print("Rutina");
 
-        if (input_x != 0.0f)
+        StartCoroutine("WaitForMovementInput");
+
+        print("Después de rutina");
+
+        if(input_x < 0)
         {
-            target.x = 1.0f;
-        } else if(input_y != 0.0f)
+            target.x = -1;
+        } else if (input_x > 0)
         {
-            target.y = 1.0f;
+            target.x = 1;
         }
 
-        if(target != Vector2.zero)
+        if (input_y < 0)
+        {
+            target.y = -1;
+        }
+        else if (input_y > 0)
+        {
+            target.y = 1;
+        }
+
+        if (target != Vector2.zero)
         {
             this.move.Move(ref position, target, ref facing_left, name_agent);
             this.move_made++;
+            input_x = input_y = 0.0f;
             return true;
         } else
         {
             return false;
         }
+    }
+
+    // WaitForMovementInput: Wait for input in control to move
+    IEnumerator WaitForMovementInput()
+    {
+        while (input_x == 0.0f & input_y == 0.0f ) 
+        {
+            input_x = Input.GetAxis("Horizontal");
+            input_y = Input.GetAxis("Vertical");
+
+            yield return null;
+        }
+        
     }
 }

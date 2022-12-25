@@ -7,11 +7,11 @@ public class GameManager : MonoBehaviour
     // --------------------------------------------------
     // Atributes
     // --------------------------------------------------
+
     // Private
     private static GameManager instance; // Instance needed for GameManager
     private GameState actual_state;
 
-    static private bool player_turn;// Bool that determinate if actual turn == player turn
     private int enemy_index;        // Index to get enemy for array
 
     private List<Enemy> enemies;    // Array(List) of Enemies
@@ -20,9 +20,6 @@ public class GameManager : MonoBehaviour
     private Enemy enemy_actual;     // Enemy of actual turn
 
     private AgentEnum agents;
-
-
-
 
 
     // --------------------------------------------------
@@ -38,16 +35,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Game Object Local for player
-        
-
-        // Class variables
-        player_turn = true;
-        enemy_index = 0;
         actual_state = GameState.game_start;
-
-        // References
-             
     }
 
     void Update()
@@ -61,18 +49,15 @@ public class GameManager : MonoBehaviour
         switch (actual_state)
         {
             case GameState.game_start:
-                print("Inicio de juego");
                 actual_state = this.StartGame();
                 break;
             case GameState.player_turn:
-                print("Turno del jugador");
                 actual_state = this.PlayerTurn();
                 break;
             case GameState.enemy_turn:
-                print("Turno del enemigo");
+                actual_state = this.EnemiesTurn();
                 break;
             case GameState.end_fight:
-                print("Fin pelea");
                 break;
             default:
                 print("Valor por defecto de actualizar estado");
@@ -83,77 +68,77 @@ public class GameManager : MonoBehaviour
     // Start Game
     GameState StartGame()
     {
-        GameObject  l_go_player,
+        // Variables
+        GameObject l_go_player,
                     l_go_enemy;
+
+        // Class variables
+        enemy_index = 0;
+        enemies = new List<Enemy>();
 
         // Get reference for player
         l_go_player = GameObject.FindGameObjectWithTag("Player");
         this.player = l_go_player.GetComponent<Player>();
 
         // Get references for enemy
-        l_go_enemy = GameObject.FindGameObjectWithTag("Player");
-
+        l_go_enemy = GameObject.FindGameObjectWithTag("Enemy");
+        this.enemy_actual = l_go_enemy.GetComponent<Enemy>();
+        this.enemies.Add(enemy_actual);
         return GameState.player_turn;
     }
 
-    // Player turn
+    // PlayerTurn: Action in player's turn
     GameState PlayerTurn()
     {
+        bool move_happen = false;
         GameState state_to_return = GameState.player_turn;
         Actions player_action; // Action for player
-        
+
         // Get Action provide by player
         player_action = player.SetAction();
 
         // Switch for action
-        switch(player_action)
+        print(player_action);
+        switch (player_action)
         {
             case Actions.move:
-                player.Move();
+                move_happen = player.Move();
+                if ( move_happen)
+                {
+                    print("Se ha movido");
+                    state_to_return = GameState.enemy_turn;
+                }
                 break;
             default:
-                state_to_return = GameState.enemy_turn;
                 break;
         }
 
         return state_to_return;
     }
 
-    
-
-    
-
-    static public bool canMove(string agent_name)
+    // PlayerTurn: Action in player's turn
+    GameState EnemiesTurn()
     {
+        GameState state_to_return = GameState.player_turn;
+        Actions enemy_action; // Action for enemy
 
-        if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Player)
+        // Update actual enemy
+        this.enemy_actual = this.enemies[enemy_index];
+
+        // Get Action provide by enemy actual
+        enemy_action = enemy_actual.SetAction();
+
+        // Switch for action
+        switch (enemy_action)
         {
-            if (player_turn)
-            {
-                return true;
-            }
-        }
-        else if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Enemy)
-        {
-            if (!player_turn)
-            {
-                return true;
-            }
+            case Actions.move:
+                enemy_actual.Move();
+                break;
+            default:
+                break;
         }
 
-        return false;
-    }
-
-    static public void endTurn(string agent_name)
-    {
-        if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Player)
-        {
-            player_turn = false;
-        }
-        else if (AgentEnum.getAgent(agent_name) == AgentEnum.Agent.Enemy)
-        {
-            player_turn = true;
-        }
+        return state_to_return;
     }
 }
 

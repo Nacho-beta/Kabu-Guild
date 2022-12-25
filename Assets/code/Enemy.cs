@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    /*
-     * Atributes of enemy
-     */
+    // --------------------------------------------------
+    // Atributes
+    // --------------------------------------------------
     // Private
-    private string name_agent;  // Name of the Agent
+    public string name_agent;  // Name of the Agent
     private bool facing_left;   // Bool indicate if is facing to left or right
     private bool stop;          // Bool indicate if is in movement
-    private float hp;
+    private float hp;           // Hit Points
+    private int max_move = 6;   // Max of move can be made
+    private int move_made = 0;  // Actual move that have been made
 
     private Vector2 speed_move; // Vector for direction
     private Vector2 next_step;  // Next position for pathing
@@ -62,6 +64,48 @@ public class Enemy : MonoBehaviour
 
 
     // ---------- Public ---------------------------
+    /* SetAction
+     * Return Enemy Action
+     */
+    public Actions SetAction()
+    {
+        if (move_made < max_move)
+        {
+            return Actions.move;
+        }
+        else
+        {
+            return Actions.none;
+        }
+    }
+
+    // Move : Move enemy to position in pathing
+    public void Move()
+    {
+        bool collision = false;
+
+        if (!stop)
+        {
+            this.fillDirection();
+
+            if (speed_move.x == 0 & speed_move.y == 0)
+            {
+                next_step = path.Dequeue();
+                path.Enqueue(next_step);
+            }
+            else
+            {
+                collision = move.Move(ref position, speed_move, ref facing_left, name_agent);
+            }
+
+            if (collision)
+            {
+                stop = true;
+                hp = 0.0f;
+            }
+        }
+    }
+
     /*
      * Start
      * Start is called before the first frame update
@@ -81,41 +125,6 @@ public class Enemy : MonoBehaviour
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
 
         this.fillPath();
-    }
-
-    /*
-     * Update
-     * Update is called once per frame
-     */
-    void Update()
-    {
-        bool collision = false;
-
-        if (GameManager.canMove(name_agent))
-        {
-            if (!stop)
-            {
-                this.fillDirection();
-
-                if (speed_move.x == 0 & speed_move.y == 0)
-                {
-                    next_step = path.Dequeue();
-                    path.Enqueue(next_step);
-                } else
-                {
-                    collision = move.Move(ref position, speed_move, ref facing_left, name_agent);
-                }
-
-                if (collision)
-                {
-                    stop = true;
-                    hp = 0.0f;
-                }
-            }
-
-            GameManager.endTurn(name_agent);
-        }
-
     }
 
     /*
