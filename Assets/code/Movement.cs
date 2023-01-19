@@ -5,45 +5,60 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     // Parameters
-    private float speed = 5f;    
-    
+    private float   speed        = 1.0f,
+                    time_to_move = 0.2f;
+    private bool is_moving = false, // Bool indicate if object is moving
+                    pos_eq_dest = true;
+    private Vector2 destination = new Vector2(0, 0),
+                    origin      = new Vector2(0, 0);
+
+    // --------------------------------------------------
+    // Methods
+    // --------------------------------------------------
 
     // Getters & Setters
     public void setSpeed(float set_speed) => speed = set_speed;
 
-    // Methods
-    /*
-     * Method: Move
-     * Move the actor around the map
-     * Return: Bool indicate if collision happen or not
-     */
+    public bool getPosOriDest() { return pos_eq_dest; }
+
+    public Vector2 getDestination() { return destination; }
+    // Public
+
+    /* Move: Move the actor around the map
+     * Return: Bool indicate if collision happen or not */
     public bool Move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
     {
-        // Local Data
-        Vector2 move = new Vector2(position.x, position.y);
-        
-        // Move object        
-        if (direction.x != 0.0f)
+        if(!is_moving)
         {
-            this.facing(ref facing_left, direction.x);
-            move.x += speed*direction.x;
-        }
-        else if (direction.y!= 0.0f)
-        {
-            move.y += speed*direction.y;
-        }
+            origin.x = position.x;
+            origin.y = position.y;
 
-        if (direction.x != 0.0f | direction.y != 0.0f)
-        {
-            if (!checkCollision(position, move, name_agent))
+            destination.x = position.x;
+            destination.y = position.y;
+
+            // Move object        
+            if (direction.x != 0.0f)
             {
-                transform.position = Vector2.MoveTowards(position, move, speed * Time.deltaTime);
-                position = transform.position;
-            } else
+                this.facing(ref facing_left, direction.x);
+                destination.x += speed * direction.x;
+            }
+            else if (direction.y != 0.0f)
             {
-                return true;
+                destination.y += speed * direction.y;
+            }
+
+            if (direction.x != 0.0f | direction.y != 0.0f)
+            {
+                if (!CheckCollision(origin, destination, name_agent))
+                {
+                    pos_eq_dest = false;
+                    StartCoroutine("MoveInTileMap");
+                    //position = origin;
+                    return true;
+                }
             }
         }
+        
 
         return false;
     }
@@ -75,11 +90,12 @@ public class Movement : MonoBehaviour
         }        
     }
 
-    /*
-     * Method: Collision detect
-     * Determinate the facing of actor, and change sprite
-     */
-    private bool checkCollision(Vector2 position, Vector2 destination, string name_agent)
+
+    // Private
+
+    /* CheckCollision: Determinate if collision exist
+     * Return: Bool indicate if collision happen or not */
+    private bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
     {
         RaycastHit2D hit;
         Vector2 direction = destination - position;
@@ -88,10 +104,10 @@ public class Movement : MonoBehaviour
         switch (AgentEnum.getAgent(name_agent))
         {
             case AgentEnum.Agent.Player:
-                mask_wall = LayerMask.GetMask("Wall", "Enemy");
+                mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", "Player");
+                mask_wall = LayerMask.GetMask("Wall", "Player", "Item");
                 break;
             default:
                 break;
@@ -104,5 +120,23 @@ public class Movement : MonoBehaviour
         }
 
         return false;
+    }
+
+    private IEnumerator MoveInTileMap()
+    {
+        float elapsed_time = 0.0f;
+
+        is_moving = true;
+
+        while(elapsed_time < time_to_move)
+        {
+            transform.position = Vector2.Lerp(origin, destination, (elapsed_time / time_to_move));
+            elapsed_time += Time.deltaTime;
+            yield return null;
+        }
+
+        origin = transform.position;
+        is_moving = false;
+        pos_eq_dest = true;
     }
 }

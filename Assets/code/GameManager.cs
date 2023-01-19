@@ -98,14 +98,12 @@ public class GameManager : MonoBehaviour
         player_action = player.SetAction();
 
         // Switch for action
-        print(player_action);
         switch (player_action)
         {
             case Actions.move:
                 move_happen = player.Move();
                 if ( move_happen)
                 {
-                    print("Se ha movido");
                     state_to_return = GameState.enemy_turn;
                 }
                 break;

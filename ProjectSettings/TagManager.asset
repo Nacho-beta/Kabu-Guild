@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Wall
   - Enemy
+  - Items
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - UI
   - World_blocking
   - Wall
-  - 
+  - Item
   - Enemy
   - Character
   - 
@@ -48,6 +49,9 @@ TagManager:
     locked: 0
   - name: Wall
     uniqueID: 2864492245
+    locked: 0
+  - name: Item
+    uniqueID: 2456947587
     locked: 0
   - name: Player
     uniqueID: 2469208557
