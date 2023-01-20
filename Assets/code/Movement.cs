@@ -53,12 +53,10 @@ public class Movement : MonoBehaviour
                 {
                     pos_eq_dest = false;
                     StartCoroutine("MoveInTileMap");
-                    //position = origin;
                     return true;
                 }
             }
-        }
-        
+        }        
 
         return false;
     }
@@ -107,13 +105,13 @@ public class Movement : MonoBehaviour
                 mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", "Player", "Item");
+                mask_wall = LayerMask.GetMask("Wall", /*"Player",*/ "Item");
                 break;
             default:
                 break;
-        }        
+        }
 
-        hit = Physics2D.Raycast(position, direction, 0.5f, mask_wall);
+        hit = Physics2D.Raycast(position, direction, speed, mask_wall);
         if(hit.collider != null )
         {
             return true;

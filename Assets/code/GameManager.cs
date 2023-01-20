@@ -95,7 +95,7 @@ public class GameManager : MonoBehaviour
         Actions player_action; // Action for player
 
         // Get Action provide by player
-        player_action = player.SetAction();
+        player_action = player.GetAction();
 
         // Switch for action
         switch (player_action)
@@ -104,6 +104,7 @@ public class GameManager : MonoBehaviour
                 move_happen = player.Move();
                 if ( move_happen)
                 {
+                    print("Cambio estado enemigo");
                     state_to_return = GameState.enemy_turn;
                 }
                 break;

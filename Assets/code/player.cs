@@ -13,11 +13,12 @@ public class Player : MonoBehaviour
     private int move_made = 0;      // Actual move that have been made
     private float   input_x = 0.0f, // Input in horizontal axis
                     input_y = 0.0f; // Input in vertical axis
-    private string name_agent;      // name_agent : Name of the Agent
+    private string name_agent;      // Name of the Agent
     private bool pos_ok = true;     // Bool indicate if current position and value of position it's ok
 
-    // move : Method to move to a position
-    private Movement move;
+    
+    private Movement move;          // Method to move to a position
+    private Actions action_actual;  // Action to return to GM
 
     // position : Vector3 (x,y,z) for position of agent
     public Vector2 position;
@@ -36,7 +37,10 @@ public class Player : MonoBehaviour
      */
     // Get Position
     public Vector2 GetPosition() { return position; }
-
+    
+    // Action
+    public Actions GetAction(){ return action_actual; }
+    public void SetAction(Actions act) { action_actual = act; }
 
     /*
      * Start
@@ -47,15 +51,12 @@ public class Player : MonoBehaviour
         name_agent = "Player";
         position = new Vector2(-0.5f, -0.25f); // 4, 4, 0
         facing_left = false;
+        action_actual = Actions.none;
 
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
     }
 
-    // SetAction : Return action selected by player
-    public Actions SetAction()
-    {
-        return Actions.move;
-    }
+    
     
 
     // Move: Move agent using control
@@ -63,8 +64,9 @@ public class Player : MonoBehaviour
     {
         Vector2 old_pos = new Vector2(position.x, position.y),
                 target = new Vector2(0, 0);
+        bool move_happen = false;
 
-        pos_ok= false;
+        // Get Input
 
         StartCoroutine("WaitForMovementInput");
 
@@ -85,17 +87,21 @@ public class Player : MonoBehaviour
             target.y = 1;
         }
 
+        // Movement
         if (target != Vector2.zero)
         {            
-            this.move_made++;
             input_x = input_y = 0.0f;
 
-            this.move.Move(ref position, target, ref facing_left, name_agent);
-            pos_ok = false;
-            StartCoroutine("UpdatePosition");
+            move_happen = this.move.Move(ref position, target, ref facing_left, name_agent);
+            if (move_happen)
+            {
+                pos_ok = false;
+                StartCoroutine("UpdatePosition");
+                return true;
+            }            
         }
 
-        return pos_ok;
+        return false;
     }
 
     // WaitForMovementInput: Wait for input in control to move
@@ -119,7 +125,15 @@ public class Player : MonoBehaviour
             pos_ok = this.move.getPosOriDest();            
             yield return null;
         }
-
+        
         position = this.move.getDestination();
+
+        this.move_made++;
+        print("Me he movido" + this.move_made);
+        if(this.move_made >= max_move-1)
+        {
+            action_actual = Actions.none;
+            this.move_made = 0;
+        }
     }
 }
