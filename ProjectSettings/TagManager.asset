@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - Items
   - Menu
+  - ActionMenu
   layers:
   - Default
   - TransparentFX

@@ -6,5 +6,6 @@ public enum Actions
 {
     move,
     attack,
+    pass_turn,
     none
 }

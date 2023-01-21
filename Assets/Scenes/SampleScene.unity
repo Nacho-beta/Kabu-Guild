@@ -1235,7 +1235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
-    m_Mode: 3
+    m_Mode: 0
     m_WrapAround: 0
     m_SelectOnUp: {fileID: 0}
     m_SelectOnDown: {fileID: 0}
@@ -1268,7 +1268,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1552858781}
         m_TargetAssemblyTypeName: ActionMenu, Assembly-CSharp
-        m_MethodName: setActionMove
+        m_MethodName: SetActionMove
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8248,7 +8248,7 @@ GameObject:
   - component: {fileID: 1552858781}
   m_Layer: 1
   m_Name: ActionMenu
-  m_TagString: Untagged
+  m_TagString: ActionMenu
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

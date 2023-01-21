@@ -147,7 +147,7 @@ public class Player : MonoBehaviour
         this.move_made++;
         if(this.move_made >= max_move-1)
         {
-            action_actual = Actions.none;
+            action_actual = Actions.pass_turn;
             this.move_made = 0;
         }
     }

@@ -98,22 +98,20 @@ public class GameManager : MonoBehaviour
     {
         bool move_happen = false;
         GameState state_to_return = GameState.player_turn;
-        Actions player_action; // Action for player
+        Actions player_action = Actions.none; // Action for player
 
         // Get Action provide by player
-        player_action = player.GetAction();
-        this.action_menu.SetStatusMenu(false);
+        player_action = player.GetAction();        
 
         // Switch for action
         switch (player_action)
         {
             case Actions.move:
+                this.action_menu.SetStatusMenu(false);
                 move_happen = player.Move();
-                if ( move_happen)
-                {
-                    print("Cambio estado enemigo");
-                    state_to_return = GameState.enemy_turn;
-                }
+                break;
+            case Actions.pass_turn:
+                state_to_return = GameState.enemy_turn;
                 break;
             default:
                 this.action_menu.SetStatusMenu(true);
@@ -126,6 +124,9 @@ public class GameManager : MonoBehaviour
     // PlayerTurn: Action in player's turn
     GameState EnemiesTurn()
     {
+        // Clear Players turn var
+        player.SetAction(Actions.none);
+
         GameState state_to_return = GameState.player_turn;
         Actions enemy_action; // Action for enemy
 

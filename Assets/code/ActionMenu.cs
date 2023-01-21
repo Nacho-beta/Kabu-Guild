@@ -33,6 +33,9 @@ public class ActionMenu : MonoBehaviour
         l_go_player = GameObject.FindGameObjectWithTag("Player");
         this.player = l_go_player.GetComponent<Player>();
 
+        // Get reference for Action menu
+        this.menu = GameObject.FindGameObjectWithTag("ActionMenu");        
+
         status_menu = true;
         is_showing = true;
     }
@@ -40,16 +43,31 @@ public class ActionMenu : MonoBehaviour
     //Update
     public void Update()
     {
-        if(status_menu != is_showing)
-        {
-            menu.SetActive(status_menu);
-            is_showing = !is_showing;
-        }        
+        this.CheckButtonVisibility();       
     }
 
     // SetActionMove : Function for button move
     public void SetActionMove()
     {
         this.player.SetAction(Actions.move);
-    }    
+    }
+    
+    // CheckButtonVisibility
+    private void CheckButtonVisibility()
+    {
+
+        if (status_menu != is_showing)
+        {
+            if(status_menu == false)
+            {
+                this.menu.transform.localScale = new Vector3(0, 0, 0);
+                is_showing = false;
+            } else
+            {
+                this.menu.transform.localScale = new Vector3(1, 1, 1);
+                is_showing = true;
+            }
+        }
+        
+    }
 }
