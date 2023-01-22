@@ -47,7 +47,7 @@ public class Player : MonoBehaviour
     // Start : Start is called before the first frame update
     void Start()
     {
-        max_move= 6;
+        max_move = 6;
         move_made = 0;
 
         input_x = 0.0f;
