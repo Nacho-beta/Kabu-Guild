@@ -9,16 +9,16 @@ public class GameManager : MonoBehaviour
     // --------------------------------------------------
 
     // Private
-    private static GameManager instance; // Instance needed for GameManager
-    private GameState actual_state;
-
-    private int enemy_index;        // Index to get enemy for array
-
+    //  Standard Var
+    private int enemy_index;    // Index to get enemy for array
+    // Array Var
     private List<Enemy> enemies;    // Array(List) of Enemies
-
-    private Player player;          // Player of game
-    private Enemy enemy_actual;     // Enemy of actual turn
-
+    // Class Type Var
+    private static GameManager instance;// Instance needed for GameManager
+    private GameState actual_state;     // Actual state of the gme
+    private Player player;              // Player of game
+    private Enemy enemy_actual;         // Enemy of actual turn
+    private ActionMenu action_menu;     // Menu for actions in combat of the player
     private AgentEnum agents;
 
 
@@ -70,7 +70,8 @@ public class GameManager : MonoBehaviour
     {
         // Variables
         GameObject l_go_player,
-                    l_go_enemy;
+                   l_go_enemy,
+                   l_go_action_menu;
 
         // Class variables
         enemy_index = 0;
@@ -83,7 +84,12 @@ public class GameManager : MonoBehaviour
         // Get references for enemy
         l_go_enemy = GameObject.FindGameObjectWithTag("Enemy");
         this.enemy_actual = l_go_enemy.GetComponent<Enemy>();
-        this.enemies.Add(enemy_actual);
+        this.enemies.Add(enemy_actual);        
+
+        // Get reference for menu
+        l_go_action_menu = GameObject.FindGameObjectWithTag("ActionMenu");
+        this.action_menu = l_go_action_menu.GetComponent<ActionMenu>();
+
         return GameState.player_turn;
     }
 
@@ -92,22 +98,23 @@ public class GameManager : MonoBehaviour
     {
         bool move_happen = false;
         GameState state_to_return = GameState.player_turn;
-        Actions player_action; // Action for player
+        Actions player_action = Actions.none; // Action for player
 
         // Get Action provide by player
-        player_action = player.SetAction();
+        player_action = player.GetAction();        
 
         // Switch for action
         switch (player_action)
         {
             case Actions.move:
+                this.action_menu.SetStatusMenu(false);
                 move_happen = player.Move();
-                if ( move_happen)
-                {
-                    state_to_return = GameState.enemy_turn;
-                }
+                break;
+            case Actions.pass_turn:
+                state_to_return = GameState.enemy_turn;
                 break;
             default:
+                this.action_menu.SetStatusMenu(true);
                 break;
         }
 
@@ -117,6 +124,9 @@ public class GameManager : MonoBehaviour
     // PlayerTurn: Action in player's turn
     GameState EnemiesTurn()
     {
+        // Clear Players turn var
+        player.SetAction(Actions.none);
+
         GameState state_to_return = GameState.player_turn;
         Actions enemy_action; // Action for enemy
 

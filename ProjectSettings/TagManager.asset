@@ -7,6 +7,8 @@ TagManager:
   - Wall
   - Enemy
   - Items
+  - Menu
+  - ActionMenu
   layers:
   - Default
   - TransparentFX

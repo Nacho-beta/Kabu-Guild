@@ -82,7 +82,7 @@ public class Enemy : MonoBehaviour
     // Move : Move enemy to position in pathing
     public void Move()
     {
-        bool collision = false;
+        bool move_happen = true;
 
         if (!stop)
         {
@@ -95,13 +95,13 @@ public class Enemy : MonoBehaviour
             }
             else
             {
-                collision = move.Move(ref position, speed_move, ref facing_left, name_agent);
-            }
-
-            if (collision)
-            {
-                stop = true;
-                hp = 0.0f;
+                move_happen = move.Move(ref position, speed_move, ref facing_left, name_agent);
+                if(!move_happen)
+                {
+                    print("No me he podido mover, me muero");
+                    this.hp = 0.0f;
+                    stop = true;
+                }
             }
         }
     }
