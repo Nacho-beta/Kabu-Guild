@@ -28,11 +28,9 @@ public class Enemy : MonoBehaviour
     public Vector2 position; //Vector3(x, y, z) for position of agent
 
 
-    /*
-     * ------------------------------------------------------
-     * Methods
-     * ------------------------------------------------------
-     */
+    // --------------------------------------------------
+    // Methods
+    // --------------------------------------------------
 
     // ---------- Static ---------------------------
     public static Enemy getEnemyDefault()
@@ -49,7 +47,7 @@ public class Enemy : MonoBehaviour
         ret_enemy.speed_move = new Vector2(1, 1);
         ret_enemy.position = new Vector2(3, 0);
 
-        ret_enemy.fillPath();
+        ret_enemy.FillPath();
 
         return ret_enemy;
     }
@@ -57,16 +55,9 @@ public class Enemy : MonoBehaviour
 
     // ---------- Getters & Setters ----------------
     // GetHP : Return actual hp
-    public float getHp()
-    {
-        return hp;
-    }
+    public float getHp(){ return hp; }
 
-
-    // ---------- Public ---------------------------
-    /* SetAction
-     * Return Enemy Action
-     */
+    // SetAction. Return Enemy Action
     public Actions SetAction()
     {
         if (move_made < max_move)
@@ -79,59 +70,11 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // Move : Move enemy to position in pathing
-    public void Move()
-    {
-        bool move_happen = true;
 
-        if (!stop)
-        {
-            this.fillDirection();
-
-            if (speed_move.x == 0 & speed_move.y == 0)
-            {
-                next_step = path.Dequeue();
-                path.Enqueue(next_step);
-            }
-            else
-            {
-                move_happen = move.Move(ref position, speed_move, ref facing_left, name_agent);
-                if(!move_happen)
-                {
-                    print("No me he podido mover, me muero");
-                    this.hp = 0.0f;
-                    stop = true;
-                }
-            }
-        }
-    }
-
-    /*
-     * Start
-     * Start is called before the first frame update
-     */
-    void Start()
-    {
-        name_agent = "Enemy";        
-        facing_left = true;
-        stop = false;
-        hp = 15.0f;
-
-        path = new Queue<Vector2>();
-        next_step = new Vector2(1, 0);
-        speed_move = new Vector2(1, 1);
-        position = new Vector2(3, 0);
-
-        move = gameObject.AddComponent(typeof(Movement)) as Movement;
-
-        this.fillPath();
-    }
-
-    /*
-     * fill_path
-     * Get path finding for agent
-     */
-    void fillPath()
+    // ---------- Private --------------------------
+    
+    // FillPath: get pathfinding for agent
+    private void FillPath()
     {
         Vector2 new_point = new Vector2(0, 0);
 
@@ -152,11 +95,8 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    /*
-     * Private: fillDirection
-     * Fill value in vector direction
-     */
-    void fillDirection()
+    // FillDirection : Fill vector for direction with position and destination
+    private void FillDirection()
     {
         // Direction in Axis X
         if (next_step.x < (position.x - 0.05f))
@@ -185,5 +125,66 @@ public class Enemy : MonoBehaviour
         {
             speed_move.y = 0;
         }
+    }
+
+    // ---------- Public ---------------------------
+
+    // Start : Only execution in first frame
+    public void Start()
+    {
+        name_agent = "Enemy";
+        facing_left = true;
+        stop = false;
+        hp = 15.0f;
+
+        path = new Queue<Vector2>();
+        next_step = new Vector2(1, 0);
+        speed_move = new Vector2(1, 1);
+        position = new Vector2(3, 0);
+
+        move = gameObject.AddComponent(typeof(Movement)) as Movement;
+
+        this.FillPath();
+    }
+
+    // Move : Move enemy to position in pathing
+    public void Move()
+    {
+        bool move_happen = true;
+
+        if (!stop)
+        {
+            this.FillDirection();
+
+            if (speed_move.x == 0 & speed_move.y == 0)
+            {
+                next_step = path.Dequeue();
+                path.Enqueue(next_step);
+            }
+            else
+            {
+                move_happen = move.Move(ref position, speed_move, ref facing_left, name_agent);
+                if(!move_happen)
+                {
+                    print("No me he podido mover, me muero");
+                    this.hp = 0.0f;
+                    stop = true;
+                }
+            }
+        }
+    }
+    
+    // ReceiveAttack : Receive attack and calculate results
+    public bool ReceiveAttack(Attack atck)
+    {
+        print("Mi vida" + this.hp);
+        this.hp -= atck.GetDamage();
+        print("Despues del golpe:" + this.hp);
+        if (this.hp <= 0.0f)
+        {
+            stop = true;
+            return true;
+        }
+        return false;
     }
 }
