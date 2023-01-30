@@ -74,14 +74,14 @@ public class MapManager : MonoBehaviour
         {
             for (int j = 0; j < width; j++)
             {
-                if (i == 10 & j == 14)
+                if (i == 9 & j == 13)
                 {
-                    player.x = 14; player.y = 10;
+                    player.x = 13; player.y = 9;
                     map[i, j] = CellType.Player;
                 }
-                else if (i == 10 & j == 15)
+                else if (i == 9 & j == 14)
                 {
-                    enemies[0].x = 15; enemies[0].y = 10;
+                    enemies[0].x = 14; enemies[0].y = 9;
                     map[i, j] = CellType.Enemy;
                 }
                 else
@@ -95,6 +95,8 @@ public class MapManager : MonoBehaviour
     public int CheckEnemiesInRange(int range)
     {
         int enemies_detected = 0;
+        //print("Jugador: x = " + player.x+" ; y = "+player.y);
+        //print("Enemigo: x = " + enemies[0].x + " ; y = " + enemies[0].y);
         CellType cell_actual = CellType.Empty;
         for(int i=0; i<= range; i++)
         {
@@ -107,6 +109,7 @@ public class MapManager : MonoBehaviour
                     {
                         enemies_detected++;
                     }
+                    //print("Casilla["+(player.y+i)+","+(player.x+j)+"] - Tipo " + cell_actual);
 
                     if(i != 0)
                     {
@@ -115,25 +118,34 @@ public class MapManager : MonoBehaviour
                         {
                             enemies_detected++;
                         }
+                        //print("Casilla[" + (player.y - i) + "," + (player.x + j) + "] - Tipo " + cell_actual);
                     }
-                    
-                    if(j != 0)
+
+
+                    if (j != 0)
                     {
                         cell_actual = this.GetMapCell(i + (int)player.y, -j + (int)player.x);
                         if (cell_actual == CellType.Enemy)
                         {
                             enemies_detected++;
                         }
-                    }
 
-                    if( i!=0 & j != 0)
+                        //print("Casilla[" + (player.y + i) + "," + (player.x - j) + "] - Tipo " + cell_actual);
+                    }
+                    
+
+                    if ( i!=0 & j != 0)
                     {
                         cell_actual = this.GetMapCell(-i + (int)player.y, -j + (int)player.x);
                         if (cell_actual == CellType.Enemy)
                         {
                             enemies_detected++;
                         }
-                    }                                       
+
+                        //print("Casilla[" + (player.y - i) + "," + (player.x - j) + "] - Tipo " + cell_actual);
+                    }
+                    
+
                 }
             }
         }
