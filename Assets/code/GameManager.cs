@@ -5,12 +5,13 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     // --------------------------------------------------
-    // Atributes
+    // Attributes
     // --------------------------------------------------
 
     // Private
     //  Standard Var
-    private int enemy_index;    // Index to get enemy for array
+    private int enemy_index;        // Index to get enemy for array
+    private bool player_move_happen;// Bool indicate if player move happen
     // Array Var
     private List<Enemy> enemies;    // Array(List) of Enemies
     // Class Type Var
@@ -19,7 +20,9 @@ public class GameManager : MonoBehaviour
     private Player player;              // Player of game
     private Enemy enemy_actual;         // Enemy of actual turn
     private ActionMenu action_menu;     // Menu for actions in combat of the player
-    private AgentEnum agents;
+    private MapManager map_manager;     // Manager for map
+
+    private AgentEnum agents;   
 
 
     // --------------------------------------------------
@@ -90,27 +93,49 @@ public class GameManager : MonoBehaviour
         l_go_action_menu = GameObject.FindGameObjectWithTag("ActionMenu");
         this.action_menu = l_go_action_menu.GetComponent<ActionMenu>();
 
+        map_manager = gameObject.AddComponent(typeof(MapManager)) as MapManager;    
+        map_manager.GenerateDesertHill();
+
         return GameState.player_turn;
     }
 
     // PlayerTurn: Action in player's turn
     GameState PlayerTurn()
     {
-        bool move_happen = false;
+        bool kill_enemy = false;
+        int enemies_hit = 0;
+
         GameState state_to_return = GameState.player_turn;
         Actions player_action = Actions.none; // Action for player
 
         // Get Action provide by player
-        player_action = player.GetAction();        
+        player_action = player.GetAction();
 
         // Switch for action
         switch (player_action)
         {
             case Actions.move:
                 this.action_menu.SetStatusMenu(false);
-                move_happen = player.Move();
+                player.Move();
+                player_move_happen = true;
+                break;
+            case Actions.fight:
+                this.action_menu.SetStatusMenu(false);
+
+                enemies_hit = map_manager.CheckEnemiesInRange(player.GetRange());
+                if(enemies_hit> 0)
+                {
+                    kill_enemy = this.enemy_actual.ReceiveAttack(player.GetAttack());
+                    if(kill_enemy) { print("Enemigo derrotado"); }
+                }
+                this.player.SetAction(Actions.pass_turn);
                 break;
             case Actions.pass_turn:
+                if(player_move_happen)
+                {
+                    map_manager.SetPlayer(player.GetPosition());
+                    player_move_happen = false;
+                }
                 state_to_return = GameState.enemy_turn;
                 break;
             default:

@@ -10,8 +10,9 @@ public class Player : MonoBehaviour
      * ------------------------------------------------------
      */
     // Standard var
-    private int max_move;       // Max of move can be made
-    private int move_made;      // Actual move that have been made
+    private int max_move,       // Max of move can be made
+                move_made,      // Actual move that have been made
+                range;          // Range for Attack
     private float   input_x,    // Input in horizontal axis
                     input_y;    // Input in vertical axis
     private string name_agent;  // Name of the Agent
@@ -24,6 +25,7 @@ public class Player : MonoBehaviour
     // Class Var
     private Movement move;          // Method to move to a position
     private Actions action_actual;  // Action to return to GM
+    private Attack my_attack;       // Attack
 
 
     /*
@@ -31,6 +33,18 @@ public class Player : MonoBehaviour
      * Methods
      * ------------------------------------------------------
      */
+
+    //-------PRIVATE-----------------------------------
+    
+    // CleanInput : Clean var for input in movement
+    private void CleanInput()
+    {
+        input_x = 0.0f;
+        input_y = 0.0f;
+    }
+
+    //-------PUBLIC------------------------------------
+    
     // Get for Position
     public Vector2 GetPosition() { return position; }
     
@@ -44,8 +58,14 @@ public class Player : MonoBehaviour
     // Set for action_actual
     public void SetAction(Actions act) { action_actual = act; }
 
+    // Get for range
+    public int GetRange() { return range; }
+
+    // Get Attack
+    public Attack GetAttack() { return my_attack; }
+
     // Start : Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         max_move = 6;
         move_made = 0;
@@ -53,15 +73,20 @@ public class Player : MonoBehaviour
         input_x = 0.0f;
         input_y = 0.0f;
 
+        range = 2;
+
         name_agent = "Player";
 
-        position = new Vector2(-0.5f, -0.25f); // 4, 4, 0
+        position = new Vector2(-0.5f, -0.25f);
         pos_ok = false;
         facing_left = false;
         
         action_actual = Actions.none;
 
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
+
+        my_attack = new Attack();
+        my_attack.SetDamage(2.0f);
     }
     
     // Move: Move agent using control
@@ -107,13 +132,6 @@ public class Player : MonoBehaviour
         }
 
         return false;
-    }
-
-    // CleanInput : Clean var for input in movement
-    private void CleanInput()
-    {
-        input_x = 0.0f;
-        input_y = 0.0f;
     }
 
 

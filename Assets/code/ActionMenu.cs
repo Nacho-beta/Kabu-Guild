@@ -51,7 +51,13 @@ public class ActionMenu : MonoBehaviour
     {
         this.player.SetAction(Actions.move);
     }
-    
+
+    // SetActionAttack : Function for button attack
+    public void SetActionFight()
+    {
+        this.player.SetAction(Actions.fight);
+    }
+
     // CheckButtonVisibility
     private void CheckButtonVisibility()
     {

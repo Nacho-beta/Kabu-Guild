@@ -5,7 +5,7 @@ using UnityEngine;
 public enum Actions
 {
     move,
-    attack,
+    fight,
     pass_turn,
     none
 }
