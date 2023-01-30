@@ -130,6 +130,9 @@ public class GameManager : MonoBehaviour
                 }
                 this.player.SetAction(Actions.pass_turn);
                 break;
+            case Actions.Skill:
+                this.player.Skill();
+                break;
             case Actions.pass_turn:
                 if(player_move_happen)
                 {
@@ -137,7 +140,7 @@ public class GameManager : MonoBehaviour
                     player_move_happen = false;
                 }
                 state_to_return = GameState.enemy_turn;
-                break;
+                break;            
             default:
                 this.action_menu.SetStatusMenu(true);
                 break;
