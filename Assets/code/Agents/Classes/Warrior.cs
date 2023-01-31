@@ -32,6 +32,8 @@ public class Warrior : Class
     {
         this.class_type = Classes.Warrior;
         this.shield = 10.0f;
+
+        this.NewSprite();
     }
 
     // UseSkill: Use specific class skill
@@ -39,4 +41,12 @@ public class Warrior : Class
     {
         this.PutShield();
     }
+
+    // NewSprite: Change Sprite to Warrior Sprite
+    override public void NewSprite() 
+    {
+        this.sprites = Resources.LoadAll<Sprite>("warrior");
+        this.sprites_size = this.sprites.Length;
+    }
+
 }

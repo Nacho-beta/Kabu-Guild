@@ -25,9 +25,10 @@ public class Player : MonoBehaviour
 
     // Class Var
     private Class my_class;
-    private Movement move;          // Method to move to a position
-    private Actions action_actual;  // Action to return to GM
-    private Attack my_attack;       // Attack
+    private Movement move;                  // Method to move to a position
+    private Actions action_actual;          // Action to return to GM
+    private Attack my_attack;               // Attack
+    private SpriteRenderer sprite_renderer; // Sprite Renderer
 
 
     /*
@@ -37,12 +38,20 @@ public class Player : MonoBehaviour
      */
 
     //-------PRIVATE-----------------------------------
-    
+
     // CleanInput : Clean var for input in movement
     private void CleanInput()
     {
         input_x = 0.0f;
         input_y = 0.0f;
+    }
+
+    /// <summary>
+    /// Change actual sprite to class sprite
+    /// </summary>
+    private void ChangeSprite()
+    {
+        sprite_renderer.sprite = my_class.GetSprite();
     }
 
     //-------GETTERS-----------------------------------    
@@ -79,29 +88,35 @@ public class Player : MonoBehaviour
     // Start : Start is called before the first frame update
     public void Start()
     {
+        // Standard var
         range = 2;
         hp = 10.0f;
-
         max_move = 6;
-        move_made = 0;
-
-        input_x = 0.0f;
-        input_y = 0.0f;        
-
+        move_made = 0;              
         name_agent = "Player";
-
-        position = new Vector2(-0.5f, -0.25f);
         pos_ok = false;
         facing_left = false;
-        
-        action_actual = Actions.none;
 
-        move = gameObject.AddComponent(typeof(Movement)) as Movement;
-
+        // Array Var
+        position = new Vector2(-0.5f, -0.25f);
+                    
+        // Initialization class var
         my_attack = new Attack();
         my_attack.SetDamage(2.0f);
 
         my_class = new Warrior();
+
+        action_actual = Actions.none;
+
+        // Get references
+        move = gameObject.AddComponent(typeof(Movement)) as Movement;
+
+        this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
+        // Methods called in the start
+        this.CleanInput();
+        print("Cantidad de sprites = " + my_class.GetSpritesSize());
+        this.ChangeSprite();
     }
     
     // Move: Move agent using control
