@@ -125,7 +125,7 @@ public class GameManager : MonoBehaviour
                 enemies_hit = map_manager.CheckEnemiesInRange(player.GetRange());
                 if(enemies_hit> 0)
                 {
-                    kill_enemy = this.enemy_actual.ReceiveAttack(player.GetAttack());
+                    kill_enemy = this.enemy_actual.ReceiveAttack(player.Attack());
                     if(kill_enemy) { print("Enemigo derrotado"); }
                 }
                 this.player.SetAction(Actions.pass_turn);

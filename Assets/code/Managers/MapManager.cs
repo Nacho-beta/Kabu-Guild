@@ -94,6 +94,7 @@ public class MapManager : MonoBehaviour
 
     public int CheckEnemiesInRange(int range)
     {
+        print("Rango" + range);
         int enemies_detected = 0;
         //print("Jugador: x = " + player.x+" ; y = "+player.y);
         //print("Enemigo: x = " + enemies[0].x + " ; y = " + enemies[0].y);
@@ -152,18 +153,6 @@ public class MapManager : MonoBehaviour
 
         return enemies_detected;
     }
-
-    public void PrintMap()
-    {
-        for(int i=0; i<height;i++)
-        {
-            for(int j=0; j<width;j++)
-            {
-                print(map[i, j]);
-            }
-        }
-    }
-
 }
 
 public enum CellType

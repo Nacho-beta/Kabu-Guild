@@ -11,8 +11,7 @@ public class Player : MonoBehaviour
      */
     // Standard var
     private int max_move,       // Max of move can be made
-                move_made,      // Actual move that have been made
-                range;          // Range for Attack
+                move_made;      // Actual move that have been made
     private float input_x,      // Input in horizontal axis
                   input_y,      // Input in vertical axis
                   hp;           // Hit points for the player
@@ -27,7 +26,6 @@ public class Player : MonoBehaviour
     private Class my_class;
     private Movement move;                  // Method to move to a position
     private Actions action_actual;          // Action to return to GM
-    private Attack my_attack;               // Attack
     private SpriteRenderer sprite_renderer; // Sprite Renderer
 
 
@@ -63,9 +61,6 @@ public class Player : MonoBehaviour
         return action_actual;
     }
 
-    // Attack
-    public Attack GetAttack() { return my_attack; }
-
     // HP
     public float GetHP() { return this.hp; }
 
@@ -73,7 +68,7 @@ public class Player : MonoBehaviour
     public Vector2 GetPosition() { return position; }           
 
     // Range
-    public int GetRange() { return range; }
+    public int GetRange() { return my_class.Attack().GetRange(); }
 
 
     //-------SETTERS-----------------------------------   
@@ -89,7 +84,6 @@ public class Player : MonoBehaviour
     public void Start()
     {
         // Standard var
-        range = 2;
         hp = 10.0f;
         max_move = 6;
         move_made = 0;              
@@ -101,9 +95,6 @@ public class Player : MonoBehaviour
         position = new Vector2(-0.5f, -0.25f);
                     
         // Initialization class var
-        my_attack = new Attack();
-        my_attack.SetDamage(2.0f);
-
         my_class = new Warrior();
 
         action_actual = Actions.none;
@@ -170,6 +161,15 @@ public class Player : MonoBehaviour
         this.my_class.UseSkill();
         print("Mi vida después de la habilidad: " + hp);
         this.action_actual = Actions.pass_turn;
+    }
+
+    /// <summary>
+    /// Select attack and calculate damage
+    /// </summary>
+    /// <returns>Attack of the class</returns>
+    public Attack Attack()
+    {
+        return my_class.Attack();
     }
 
 

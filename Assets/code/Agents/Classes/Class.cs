@@ -50,13 +50,17 @@ public abstract class Class
         this.player = go_player.GetComponent<Player>();
 
         sprite_iter = 0;
-    }
-
-    
+    }    
 
     // UseSkill: Use specific class skill
     abstract public void UseSkill();
 
     // NewSprite: Change sprite to specific of a class
     abstract public void NewSprite();
+
+    /// <summary>
+    /// Calculate damage deal by the class
+    /// </summary>
+    /// <returns> Attack of the class</returns>
+    abstract public Attack Attack();
 }
