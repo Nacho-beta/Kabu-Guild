@@ -58,6 +58,11 @@ public class ActionMenu : MonoBehaviour
         this.player.SetAction(Actions.fight);
     }
 
+    public void SetActionSkill()
+    {
+        this.player.SetAction(Actions.Skill);
+    }
+
     // CheckButtonVisibility
     private void CheckButtonVisibility()
     {

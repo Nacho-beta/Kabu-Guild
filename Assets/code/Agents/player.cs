@@ -11,10 +11,10 @@ public class Player : MonoBehaviour
      */
     // Standard var
     private int max_move,       // Max of move can be made
-                move_made,      // Actual move that have been made
-                range;          // Range for Attack
-    private float   input_x,    // Input in horizontal axis
-                    input_y;    // Input in vertical axis
+                move_made;      // Actual move that have been made
+    private float input_x,      // Input in horizontal axis
+                  input_y,      // Input in vertical axis
+                  hp;           // Hit points for the player
     private string name_agent;  // Name of the Agent
     private bool pos_ok ,       // Bool indicate if current position and value of position it's ok
                  facing_left;   // Bool that indicate if is facing to left or right
@@ -23,9 +23,10 @@ public class Player : MonoBehaviour
     public Vector2 position;    // Vector2 (x,y) for position of agent
 
     // Class Var
-    private Movement move;          // Method to move to a position
-    private Actions action_actual;  // Action to return to GM
-    private Attack my_attack;       // Attack
+    private Class my_class;
+    private Movement move;                  // Method to move to a position
+    private Actions action_actual;          // Action to return to GM
+    private SpriteRenderer sprite_renderer; // Sprite Renderer
 
 
     /*
@@ -35,7 +36,7 @@ public class Player : MonoBehaviour
      */
 
     //-------PRIVATE-----------------------------------
-    
+
     // CleanInput : Clean var for input in movement
     private void CleanInput()
     {
@@ -43,50 +44,70 @@ public class Player : MonoBehaviour
         input_y = 0.0f;
     }
 
-    //-------PUBLIC------------------------------------
-    
-    // Get for Position
-    public Vector2 GetPosition() { return position; }
-    
-    // Get for action_actual
+    /// <summary>
+    /// Change actual sprite to class sprite
+    /// </summary>
+    private void ChangeSprite()
+    {
+        sprite_renderer.sprite = my_class.GetSprite();
+    }
+
+    //-------GETTERS-----------------------------------    
+    // Action Actual
     public Actions GetAction()
     {
         if (action_actual == Actions.move)
             this.CleanInput();
-        return action_actual; 
+        return action_actual;
     }
-    // Set for action_actual
+
+    // HP
+    public float GetHP() { return this.hp; }
+
+    // Position
+    public Vector2 GetPosition() { return position; }           
+
+    // Range
+    public int GetRange() { return my_class.Attack().GetRange(); }
+
+
+    //-------SETTERS-----------------------------------   
+    // Action actual
     public void SetAction(Actions act) { action_actual = act; }
 
-    // Get for range
-    public int GetRange() { return range; }
+    // HP
+    public void SetHP(float new_hp) { this.hp = new_hp; }
 
-    // Get Attack
-    public Attack GetAttack() { return my_attack; }
 
+    //-------PUBLIC------------------------------------ 
     // Start : Start is called before the first frame update
     public void Start()
     {
+        // Standard var
+        hp = 10.0f;
         max_move = 6;
-        move_made = 0;
-
-        input_x = 0.0f;
-        input_y = 0.0f;
-
-        range = 2;
-
+        move_made = 0;              
         name_agent = "Player";
-
-        position = new Vector2(-0.5f, -0.25f);
         pos_ok = false;
         facing_left = false;
-        
+
+        // Array Var
+        position = new Vector2(-0.5f, -0.25f);
+                    
+        // Initialization class var
+        my_class = new Warrior();
+
         action_actual = Actions.none;
 
+        // Get references
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
 
-        my_attack = new Attack();
-        my_attack.SetDamage(2.0f);
+        this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
+        // Methods called in the start
+        this.CleanInput();
+        print("Cantidad de sprites = " + my_class.GetSpritesSize());
+        this.ChangeSprite();
     }
     
     // Move: Move agent using control
@@ -132,6 +153,23 @@ public class Player : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void Skill()
+    {
+        print("Mi vida: " + hp);
+        this.my_class.UseSkill();
+        print("Mi vida después de la habilidad: " + hp);
+        this.action_actual = Actions.pass_turn;
+    }
+
+    /// <summary>
+    /// Select attack and calculate damage
+    /// </summary>
+    /// <returns>Attack of the class</returns>
+    public Attack Attack()
+    {
+        return my_class.Attack();
     }
 
 

@@ -125,10 +125,13 @@ public class GameManager : MonoBehaviour
                 enemies_hit = map_manager.CheckEnemiesInRange(player.GetRange());
                 if(enemies_hit> 0)
                 {
-                    kill_enemy = this.enemy_actual.ReceiveAttack(player.GetAttack());
+                    kill_enemy = this.enemy_actual.ReceiveAttack(player.Attack());
                     if(kill_enemy) { print("Enemigo derrotado"); }
                 }
                 this.player.SetAction(Actions.pass_turn);
+                break;
+            case Actions.Skill:
+                this.player.Skill();
                 break;
             case Actions.pass_turn:
                 if(player_move_happen)
@@ -137,7 +140,7 @@ public class GameManager : MonoBehaviour
                     player_move_happen = false;
                 }
                 state_to_return = GameState.enemy_turn;
-                break;
+                break;            
             default:
                 this.action_menu.SetStatusMenu(true);
                 break;

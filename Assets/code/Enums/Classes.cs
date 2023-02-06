@@ -2,11 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum Actions
+public enum Classes
 {
-    move,
-    fight,
-    Skill,
-    pass_turn,
-    none
+    Mage,
+    Ranger,
+    Warrior
 }
