@@ -21,6 +21,7 @@ public class Player : MonoBehaviour
 
     // Array Var
     public Vector2 position;    // Vector2 (x,y) for position of agent
+    private (int,int) map_move;
 
     // Class Var
     private Class my_class;
@@ -70,6 +71,18 @@ public class Player : MonoBehaviour
     // Range
     public int GetRange() { return my_class.Attack().GetRange(); }
 
+    /// <summary>
+    /// Get map position
+    /// </summary>
+    /// <returns>Get player's pos relative to map manager</returns>
+    public (int,int) GetMapPosition()
+    {
+        (int,int) map_position = map_move;
+        map_move = (0, 0);
+
+        return map_position;
+    }
+
 
     //-------SETTERS-----------------------------------   
     // Action actual
@@ -106,7 +119,6 @@ public class Player : MonoBehaviour
 
         // Methods called in the start
         this.CleanInput();
-        print("Cantidad de sprites = " + my_class.GetSpritesSize());
         this.ChangeSprite();
     }
     
@@ -147,6 +159,26 @@ public class Player : MonoBehaviour
             if (move_happen)
             {
                 pos_ok = false;
+
+                // Pos relative to map
+                if(target.x < 0)
+                {
+                    map_move.Item1 -= 1;
+                } else if(target.x > 0)
+                {
+                    map_move.Item1 += 1;
+                }
+
+                // Pos relative to map
+                if (target.y < 0)
+                {
+                    map_move.Item2 -= 1;
+                }
+                else if (target.y > 0)
+                {
+                    map_move.Item2 += 1;
+                }
+
                 StartCoroutine("UpdatePosition");
                 return true;
             }            
@@ -196,11 +228,10 @@ public class Player : MonoBehaviour
         {
             pos_ok = this.move.getPosOriDest();            
             yield return null;
-        }
-        
+        }        
         position = this.move.getDestination();
-
         this.move_made++;
+
         if(this.move_made >= max_move-1)
         {
             action_actual = Actions.pass_turn;

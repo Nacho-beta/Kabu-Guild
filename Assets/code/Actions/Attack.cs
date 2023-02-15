@@ -50,4 +50,10 @@ public class Attack
         dmg = 5.0f;
         range = 2;
     }
+
+    public void CreateKoboldBite()
+    {
+        dmg = 2.0f;
+        range = 1;
+    }
 }

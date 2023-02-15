@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum Actions
 {
+    plan,
     move,
     fight,
     Skill,
