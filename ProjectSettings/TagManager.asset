@@ -9,6 +9,7 @@ TagManager:
   - Items
   - Menu
   - ActionMenu
+  - Communication
   layers:
   - Default
   - TransparentFX
