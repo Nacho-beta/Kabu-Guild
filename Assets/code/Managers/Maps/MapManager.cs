@@ -1,28 +1,69 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class MapManager : MonoBehaviour
 {
     // --------------------------------------------------
     // Attributes
     // --------------------------------------------------
-    
+
     // Standard Var
     private int width, 
                 height;
     private string key; // Key needed for communication
 
     // Array var
-    private (int,int) player;     // Position in map for player
-    private (int,int)[] enemies;  // Position in map for enemies
+    private (int,int) player;               // Position in map for player
+    private (int,int)[] enemies;            // Position in map for enemies
+   // private Vector3Int[] tile_highlighted;  // Array for position of highlighted tiles  
 
     // Class var
     private CellType[,] map;   // Matrix with map info
+    private Tilemap co_tilemap;  // Tile map of the scene
+    //private Tile 
 
     // --------------------------------------------------
     // Methods
     // --------------------------------------------------
+
+    //-------UNITY-------------------------------------
+    /// <summary>
+    /// Execution of start in the first frame
+    /// </summary>
+    public void Start()
+    {
+        GameObject l_go_floor;
+
+        l_go_floor = GameObject.FindGameObjectWithTag("Floor");
+        this.co_tilemap = l_go_floor.GetComponent<Tilemap>();
+    }
+
+
+    //-------PRIVATE-----------------------------------
+    /// <summary>
+    /// Remark a Tile when it is needed
+    /// </summary>
+    /// <param name="x"> Width position </param>
+    /// <param name="y"> Hight postiion </param>
+    private void HighlightTile(int x, int y)
+    {
+        (int, int) medium_point;
+        Vector3Int grid_position = new Vector3Int();
+
+        medium_point.Item1 = (int)Mathf.Floor(width / 2.0f);
+        medium_point.Item2 = (int)Mathf.Floor(height / 2.0f);
+
+        // Get position of tile in the world
+        //grid_position.x = 1;
+        grid_position.x = (int)Mathf.Ceil(x - (this.width / 2.0f) - 1.5f);        
+        grid_position.y = (int)(y - (this.height / 2.0f));
+        //grid_position.y = -1;
+
+        co_tilemap.SetTileFlags(grid_position, TileFlags.None);
+        co_tilemap.SetColor(grid_position, Color.red);
+    }
 
     //-------GETTERS-----------------------------------
     public string GetKey() { return key; }
@@ -33,7 +74,8 @@ public class MapManager : MonoBehaviour
         
         Vector2 pos_scene = new Vector2();
 
-        pos_scene.x = pos_map_enemy.Item2 - Mathf.Floor(this.width / 2) + 0.5f;
+        //pos_scene.x = pos_map_enemy.Item2 - Mathf.Ceil(this.width / 2.0f) + 0.5f;
+        pos_scene.x = pos_map_enemy.Item2 - Mathf.Floor(this.width/2.0f)  - 1.5f;
         pos_scene.y = pos_map_enemy.Item1 - Mathf.Floor(this.height / 2) + 0.75f;
 
         return pos_scene;
@@ -95,16 +137,16 @@ public class MapManager : MonoBehaviour
         key = "Kobold Hill";
 
         // Fill map array
-        width = 19; height = 20;
+        width = 25; height = 21;
         map = new CellType[height, width];
 
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
-                if (i == 9 & j == 9)
+                if (i == 9 & j == 13)
                 {
-                    player.Item1 = 9; player.Item2 = 9;
+                    player.Item1 = 9; player.Item2 = 13;
                     map[i, j] = CellType.Player;
                 }
                 else
@@ -114,72 +156,32 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        enemies[0].Item1 = 9; enemies[0].Item2 = 11;
+        enemies[0].Item1 = 9; enemies[0].Item2 = 14;
         map[11, 9] = CellType.Enemy;
 
-        enemies[1].Item1 = 11; enemies[1].Item2 = 11;
+        enemies[1].Item1 = 10; enemies[1].Item2 = 16;
         map[11, 11] = CellType.Enemy;
     }
 
     public int CheckEnemiesInRange(int range)
     {
-        int enemies_detected = 0;
-        //print("Jugador: x = " + player.x+" ; y = "+player.y);
-        //print("Enemigo: x = " + enemies[0].x + " ; y = " + enemies[0].y);
-        CellType cell_actual = CellType.Empty;
-        for(int i=0; i<= range; i++)
+        int lv_enemies_found = 0,
+            lv_hypotenuse = 0;
+
+        foreach((int, int) enemy_actual in enemies)
         {
-            for(int j=0; j<= (range-i); j++)
-            {                
-                if (i!=0 | j!=0)
-                {
-                    cell_actual = this.GetMapCell(i + player.Item2, j + player.Item1);
-                    if(cell_actual == CellType.Enemy)
-                    {
-                        enemies_detected++;
-                    }
-                    //print("Casilla["+(player.y+i)+","+(player.x+j)+"] - Tipo " + cell_actual);
+            lv_hypotenuse = (int)Mathf.Pow(enemy_actual.Item2 - player.Item2, 2) + (int)Mathf.Pow(enemy_actual.Item1 - player.Item1, 2);
+            lv_hypotenuse = (int)Mathf.Sqrt(lv_hypotenuse);
 
-                    if(i != 0)
-                    {
-                        cell_actual = this.GetMapCell(-i + player.Item2, j + player.Item1);
-                        if (cell_actual == CellType.Enemy)
-                        {
-                            enemies_detected++;
-                        }
-                        //print("Casilla[" + (player.y - i) + "," + (player.x + j) + "] - Tipo " + cell_actual);
-                    }
-
-
-                    if (j != 0)
-                    {
-                        cell_actual = this.GetMapCell(i + player.Item2, -j + player.Item1);
-                        if (cell_actual == CellType.Enemy)
-                        {
-                            enemies_detected++;
-                        }
-
-                        //print("Casilla[" + (player.y + i) + "," + (player.x - j) + "] - Tipo " + cell_actual);
-                    }
-                    
-
-                    if ( i!=0 & j != 0)
-                    {
-                        cell_actual = this.GetMapCell(-i + player.Item2, -j + player.Item1);
-                        if (cell_actual == CellType.Enemy)
-                        {
-                            enemies_detected++;
-                        }
-
-                        //print("Casilla[" + (player.y - i) + "," + (player.x - j) + "] - Tipo " + cell_actual);
-                    }
-                    
-
-                }
+            if(lv_hypotenuse <= range)
+            {
+                lv_enemies_found++;
+                this.HighlightTile(enemy_actual.Item2, enemy_actual.Item1);
+                print("Enemigo en casilla " + enemy_actual);
             }
         }
 
-        return enemies_detected;
+        return lv_enemies_found;
     }
 
     /// <summary>
@@ -248,7 +250,7 @@ public class MapManager : MonoBehaviour
         }
 
         return ret_player_found;
-    }
+    }    
 }
 
 public enum CellType

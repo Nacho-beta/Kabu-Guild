@@ -10,6 +10,8 @@ TagManager:
   - Menu
   - ActionMenu
   - Communication
+  - Map
+  - Floor
   layers:
   - Default
   - TransparentFX

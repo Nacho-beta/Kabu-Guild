@@ -854,7 +854,7 @@ Tilemap:
     second:
       serializedVersion: 2
       m_TileIndex: 0
-      m_TileSpriteIndex: 0
+      m_TileSpriteIndex: 4
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -900,15 +900,19 @@ Tilemap:
     m_Data: {fileID: 11400000, guid: bb63a722138679f4fa02197a98677be4, type: 2}
   - m_RefCount: 1
     m_Data: {fileID: 11400000, guid: ceebca185d49867488a86bd5e0715c81, type: 2}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   m_TileSpriteArray:
-  - m_RefCount: 1
-    m_Data: {fileID: 2133291130, guid: cc4740252031aee4c99737148df9b3da, type: 3}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   - m_RefCount: 1
     m_Data: {fileID: -1475137713, guid: cc4740252031aee4c99737148df9b3da, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 1811776370, guid: cc4740252031aee4c99737148df9b3da, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 1629881326, guid: cc4740252031aee4c99737148df9b3da, type: 3}
+  - m_RefCount: 1
+    m_Data: {fileID: 2133291130, guid: cc4740252031aee4c99737148df9b3da, type: 3}
   m_TileMatrixArray:
   - m_RefCount: 4
     m_Data:
@@ -934,8 +938,8 @@ Tilemap:
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Origin: {x: -6, y: -1, z: 0}
-  m_Size: {x: 6, y: 2, z: 1}
+  m_Origin: {x: -30, y: -1, z: 0}
+  m_Size: {x: 30, y: 2, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
   m_TileOrientation: 0
   m_TileOrientationMatrix:
@@ -4461,7 +4465,7 @@ GameObject:
   - component: {fileID: 1411815572}
   m_Layer: 6
   m_Name: FloorTilemap
-  m_TagString: Untagged
+  m_TagString: Floor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9039,9 +9043,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1960272291}
   - component: {fileID: 1960272290}
+  - component: {fileID: 1960272292}
   m_Layer: 0
   m_Name: Grid
-  m_TagString: Untagged
+  m_TagString: Map
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9076,6 +9081,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1960272292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1960272289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8213fc98a1b617a42b10b7d452028d02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  highlght_tile: {fileID: 0}
 --- !u!1 &2043990591
 GameObject:
   m_ObjectHideFlags: 0

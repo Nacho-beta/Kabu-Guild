@@ -12,7 +12,8 @@ public class GameManager : MonoBehaviour
     //  Standard Var
     private int enemy_index;        // Index to get enemy for array
     private bool player_move_happen,// Bool indicate if player move happen
-                 enemy_move_happen; // Bool indicate if enemy move happen
+                 enemy_move_happen, // Bool indicate if enemy move happen
+                 enemy_hit_happen;  // Bool indicate if enemy attack
     // Array Var
     private List<Enemy> enemies;    // Array(List) of Enemies
     // Class Type Var
@@ -190,7 +191,9 @@ public class GameManager : MonoBehaviour
                     map_manager.SetPlayer(player.GetMapPosition());
                     player_move_happen = false;
                 }
-                state_to_return = GameState.enemy_turn;
+                //state_to_return = GameState.enemy_turn;
+                this.player.SetAction(Actions.none);
+                state_to_return = GameState.player_turn;
                 break;            
             default:
                 this.action_menu.SetStatusMenu(true);
@@ -211,10 +214,13 @@ public class GameManager : MonoBehaviour
         Actions enemy_action; // Action for enemy
 
         // Check if enemy is range
-        if(map_manager.CheckPlayerInRange(enemy_actual.GetRange(), enemy_index)) 
+        if(!enemy_hit_happen)
         {
-            enemy_actual.SetAction(Actions.fight);
-        }
+            if (map_manager.CheckPlayerInRange(enemy_actual.GetRange(), enemy_index))
+            {
+                enemy_actual.SetAction(Actions.fight);
+            }
+        }        
 
         enemy_action = enemy_actual.GetAction();
         switch (enemy_action)
@@ -233,7 +239,8 @@ public class GameManager : MonoBehaviour
                 enemy_move_happen = true;
                 break;
             case Actions.fight:
-                print("Ataco");
+                //print("Ataco");
+                enemy_hit_happen = true;
                 enemy_actual.SetAction(Actions.pass_turn);
                 break;
             case Actions.pass_turn:
@@ -243,6 +250,7 @@ public class GameManager : MonoBehaviour
                     enemy_move_happen =false;
                 }
                 enemy_actual.SetAction(Actions.plan);
+                enemy_hit_happen = false;
                 state_to_return = this.UpdateEnemyActual();
                 break;
         }
