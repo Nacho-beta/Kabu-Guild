@@ -10,19 +10,20 @@ public class Enemy : MonoBehaviour
      * ------------------------------------------------------
      */
     // Standard var
-    public string name_agent;       // Name of the Agent
+    private string name_agent;      // Name of the Agent
     private bool facing_left,       // Bool indicate if is facing to left or right
                  stop,              // Bool indicate if is in movement
                  player_in_range,   // Bool indicate if player is in attack range
-                 pos_ok;            // Bool indicate if position is updated
+                 pos_ok,            // Bool indicate if position is updated
+                 action_made;       // Bool indicate if action was made
     private int max_move,       // Max of move can be made
                 move_made,      // Actual move that have been made
                 id;
 
     // Array Var
-    private Vector2 speed_move, // Vector for direction
-                    next_step;  // Next position for pathing
-    public Vector2 position;    //Vector3(x, y, z) for position of agent
+    private Vector2 next_step,  // Next position for pathing
+                    last_step,  // Last position in pathfinding
+                    position;   //Vector3(x, y, z) for position of agent
     private Queue<Vector2> path;// Queue for pathing
     private (int, int) map_move;
 
@@ -49,12 +50,13 @@ public class Enemy : MonoBehaviour
         facing_left = true;
         stop = false;
         player_in_range = false;
+        action_made = false;
         max_move = 3;
         move_made = 0;
 
         path = new Queue<Vector2>();
-        next_step = new Vector2(1, 0);
-        speed_move = new Vector2(1, 1);
+        next_step = new Vector2(0, 0);
+        last_step = new Vector2(0, 0);
         position = new Vector2(3, 0);
         map_move = (0, 0);
 
@@ -86,7 +88,6 @@ public class Enemy : MonoBehaviour
 
         ret_enemy.path = new Queue<Vector2>();
         ret_enemy.next_step = new Vector2(1, 0);
-        ret_enemy.speed_move = new Vector2(1, 1);
         ret_enemy.position = new Vector2(3, 0);
         ret_enemy.map_move = (0, 0);
 
@@ -121,7 +122,6 @@ public class Enemy : MonoBehaviour
         path.Enqueue(next_step);
     }
 
-
     //-------GETTERS-----------------------------------   
     /// <summary>
     /// Get HP of Enemy
@@ -143,28 +143,21 @@ public class Enemy : MonoBehaviour
 
     public Actions GetAction() 
     {
-        /*
-        // If player is in range, always attack
-        if (player_in_range) 
-        {            
-            action_actual = Actions.fight;
+        if (action_made)
+        {
+            action_made = false;
+            action_actual = Actions.pass_turn;
+            return Actions.pass_turn;
         } else
-        {            
-            // If can't move and can't attack, end turn
-            if (move_made >= max_move)
-            {
-                move_made = 0;
-                action_actual = Actions.pass_turn;
-            }
-            else
-            {
-                action_actual = Actions.move;
-            }
-        }*/
-        return action_actual; 
+        {
+            return action_actual;
+        }
     }
 
-    //
+    /// <summary>
+    /// Get for ID
+    /// </summary>
+    /// <returns> Id of the enemy </returns>
     public int GetId() { return id; }
 
     /// <summary>
@@ -193,93 +186,51 @@ public class Enemy : MonoBehaviour
     public void SetAction(Actions new_action) { action_actual = new_action; }
 
 
-    // ---------- Private --------------------------    
-
+    //-------PUBLIC------------------------------------
     /// <summary>
-    /// Fill vector direction
+    /// Enemy's move 
     /// </summary>
-    private void FillDirection()
-    {        
-        // Direction in Axis X
-        if (next_step.x < (position.x - 0.05f))
-        {
-            speed_move.x = -1;
-        }
-        else if (next_step.x > (position.x + 0.05f))
-        {
-            speed_move.x = 1;
-        }
-        else
-        {
-            speed_move.x = 0;
-
-            // Direction in Axis Y
-            if (next_step.y < position.y - 0.05f)
-            {
-                speed_move.y = -1;
-            }
-            else if (next_step.y > position.y + 0.05f)
-            {
-                speed_move.y = 1;
-            }
-            else
-            {
-                speed_move.y = 0;
-            }
-        }
-
-        
-    }
-
-    // ---------- Public ---------------------------
-
-    // Move : Move enemy to position in pathing
+    /// <returns> Bool indicate success or failure </returns>
     public bool Move()
     {        
         bool move_happen = false;
 
-        // Movement
-        if (speed_move != Vector2.zero)
+        if(last_step != next_step)
         {
             move_happen = this.move.Move(ref position, next_step, ref facing_left, name_agent);
             if (move_happen)
             {
-                // Pos relative to map
-                if (next_step.x < 0)
-                {
-                    map_move.Item2 -= 1;
-                }
-                else if (next_step.x > 0)
-                {
-                    map_move.Item2 += 1;
-                }
-
-                // Pos relative to map
-                if (next_step.y < 0)
-                {
-                    map_move.Item1 -= 1;
-                }
-                else if (next_step.y > 0)
-                {
-                    map_move.Item1 += 1;
-                }
-                
+                last_step = next_step;
                 pos_ok = false;
                 StartCoroutine("UpdatePosition");
                 return true;
             }
         }
-
+       
         return false;
     }
     
-    // ReceiveAttack : Receive attack and calculate results
+    /// <summary>
+    /// Attacks receiver
+    /// </summary>
+    /// <param name="atck"> Attack to receive</param>
+    /// <returns> Bool indicate if the agent is dead </returns>
     public bool ReceiveAttack(Attack atck)
     {
         print("Vida actual = " + agent_type.GetHp());
         stop = agent_type.ReceiveAttack(atck);
         print("Vida despues del ataque = " + agent_type.GetHp());
         return stop;
+    }
+
+    public void FoundEnemy(bool enemy_found)
+    {        
+        if (enemy_found) 
+        {
+            player_in_range = enemy_found;
+            pos_ok = true;
+            this.action_actual = Actions.fight;
+        }
     }
 
     public Actions PathFinding()
@@ -291,7 +242,15 @@ public class Enemy : MonoBehaviour
         return action_actual;
     }
 
-    // UpdatePosition: Call get method for movement to update the position
+    public void Attack()
+    {
+        this.action_made = true;
+    }
+
+    /// <summary>
+    /// Update actual position with move controller
+    /// </summary>
+    /// <returns>Ienumerator needed for asynchronous operations</returns>
     IEnumerator UpdatePosition()
     {
         while (!pos_ok)
@@ -302,14 +261,33 @@ public class Enemy : MonoBehaviour
 
         // Update pos
         position = this.move.getDestination();
+        
+        // Pos relative to map
+        if (next_step.x < 0)
+        {
+            map_move.Item2 -= 1;
+        }
+        else if (next_step.x > 0)
+        {
+            map_move.Item2 += 1;
+        }
 
-        // Update next step
+        // Pos relative to map
+        if (next_step.y < 0)
+        {
+            map_move.Item1 -= 1;
+        }
+        else if (next_step.y > 0)
+        {
+            map_move.Item1 += 1;
+        }
 
+        // Update next step        
         next_step = path.Dequeue();
         path.Enqueue(next_step);
 
         this.move_made++;
-        if (this.move_made >= max_move - 1)
+        if (this.move_made > max_move)
         {
             action_actual = Actions.pass_turn;
         }

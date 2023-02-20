@@ -105,7 +105,7 @@ public class Movement : MonoBehaviour
                 mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", /*"Player",*/ "Item");
+                mask_wall = LayerMask.GetMask("Wall", "Player", "Item");
                 break;
             default:
                 break;

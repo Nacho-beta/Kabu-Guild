@@ -18,7 +18,8 @@ public class GameManager : MonoBehaviour
     private List<Enemy> enemies;    // Array(List) of Enemies
     // Class Type Var
     public static GameManager instance;// Instance needed for GameManager
-    private GameState actual_state;     // Actual state of the gme
+    private GameState actual_state,     // Actual state of the game
+                      last_state;       // Last state of the game
     private Player player;              // Player of game
     private Enemy enemy_actual;         // Enemy of actual turn
     private ActionMenu action_menu;     // Menu for actions in combat of the player
@@ -45,16 +46,12 @@ public class GameManager : MonoBehaviour
         if (enemy_index >= enemies.Count)
         {
             enemy_index = 0;
-            ret_next_state = GameState.player_turn;
+            ret_next_state = GameState.update_battle;
+            this.action_menu.SetStatusMenu(true);
         }
 
         enemy_actual = enemies[enemy_index];
         return ret_next_state;
-    }
-
-    private void InitializeEnemies()
-    {
-
     }
 
     // Awake
@@ -66,7 +63,44 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Variables
+        GameObject l_go_player,
+                   l_go_action_menu,
+                   l_go_map,
+                   l_go_communication;
+        GameObject[] lr_go_enemies;
+
         actual_state = GameState.game_start;
+
+        // Class variables
+        enemy_index = 0;
+        enemies = new List<Enemy>();
+
+        // Get reference for map manager
+        l_go_map = GameObject.FindGameObjectWithTag("Map");
+        this.map_manager = l_go_map.GetComponent<MapManager>();
+
+        // Get reference for player
+        l_go_player = GameObject.FindGameObjectWithTag("Player");
+        this.player = l_go_player.GetComponent<Player>();
+
+        // Get references for enemy
+        lr_go_enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject l_go_enemy in lr_go_enemies)
+        {
+            enemy_actual = l_go_enemy.GetComponent<Enemy>();
+            
+            enemy_index++;
+            this.enemies.Add(enemy_actual);
+        }
+
+        // Get reference for menu
+        l_go_action_menu = GameObject.FindGameObjectWithTag("ActionMenu");
+        this.action_menu = l_go_action_menu.GetComponent<ActionMenu>();
+
+        // Get reference for menu
+        l_go_communication = GameObject.FindGameObjectWithTag("Communication");
+        this.communication = l_go_communication.GetComponent<CommunicationManager>();
     }
 
     void Update()
@@ -81,6 +115,9 @@ public class GameManager : MonoBehaviour
         {
             case GameState.game_start:
                 actual_state = this.StartGame();
+                break;
+            case GameState.update_battle:
+                actual_state = this.UpdateBattle();
                 break;
             case GameState.player_turn:
                 actual_state = this.PlayerTurn();
@@ -99,53 +136,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Start Game
+    /// <summary>
+    /// Status to execute at the beginning of the game
+    /// </summary>
+    /// <returns> Next state for the game </returns>
     GameState StartGame()
     {
-        // Variables
-        GameObject l_go_player,
-                   l_go_action_menu,
-                   l_go_map,
-                   l_go_communication;
-        GameObject[] lr_go_enemies;
-
-        // Class variables
-        enemy_index = 0;
-        enemies = new List<Enemy>();
-
-
-        //map_manager = gameObject.AddComponent(typeof(MapManager)) as MapManager;
-        l_go_map = GameObject.FindGameObjectWithTag("Map");
-        this.map_manager = l_go_map.GetComponent<MapManager>();
-        map_manager.GenerateDesertHill();
-
-        // Get reference for player
-        l_go_player = GameObject.FindGameObjectWithTag("Player");
-        this.player = l_go_player.GetComponent<Player>();
-
-        // Get references for enemy
-        lr_go_enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        foreach (GameObject l_go_enemy in lr_go_enemies)
-        {
-            enemy_actual = l_go_enemy.GetComponent<Enemy>();
-            enemy_actual.SetPosition(map_manager.GetEnemyPos(this.enemy_index));
-            enemy_index++;
-            this.enemies.Add(enemy_actual);            
-        }
-
-        // Get reference for menu
-        l_go_action_menu = GameObject.FindGameObjectWithTag("ActionMenu");
-        this.action_menu = l_go_action_menu.GetComponent<ActionMenu>();
-
-        // Get reference for menu
-        l_go_communication = GameObject.FindGameObjectWithTag("Communication");
-        this.communication = l_go_communication.GetComponent<CommunicationManager>();        
-
-        this.communication.SetKey(map_manager.GetKey());     
-
         // Clear var
         enemy_index = 0;
-        enemy_actual = enemies[enemy_index];
+        last_state= GameState.game_start;
+
+        // Map generation
+        map_manager.GenerateDesertHill();               
+          
+        // Comunication init
+        this.communication.SetKey(map_manager.GetKey());
+
+        // Initialization for enemies
+        for(int i=0; i<enemies.Count; i++)
+        {
+            enemy_actual = enemies[i];
+            enemy_actual.SetAction(Actions.plan);
+            enemy_actual.SetPosition(map_manager.GetEnemyPos(i));
+
+            communication.Subscribe(enemy_actual.GetId());
+        }
+
+        // Player init
+        this.player.SetPosition(map_manager.GetPlayerPos());
+
+        enemy_actual = enemies[enemy_index];      
 
         return GameState.player_turn;
     }
@@ -153,11 +173,13 @@ public class GameManager : MonoBehaviour
     // PlayerTurn: Action in player's turn
     GameState PlayerTurn()
     {
+        // Var
         bool kill_enemy = false;
         int enemies_hit = 0;
-
         GameState state_to_return = GameState.player_turn;
         Actions player_action = Actions.none; // Action for player
+
+        last_state = GameState.player_turn;
 
         // Get Action provide by player
         player_action = player.GetAction();
@@ -186,14 +208,7 @@ public class GameManager : MonoBehaviour
                 this.player.Skill();
                 break;
             case Actions.pass_turn:
-                if(player_move_happen)
-                {
-                    map_manager.SetPlayer(player.GetMapPosition());
-                    player_move_happen = false;
-                }
-                //state_to_return = GameState.enemy_turn;
-                this.player.SetAction(Actions.none);
-                state_to_return = GameState.player_turn;
+                state_to_return = GameState.update_battle;
                 break;            
             default:
                 this.action_menu.SetStatusMenu(true);
@@ -213,54 +228,113 @@ public class GameManager : MonoBehaviour
         GameState state_to_return = GameState.enemy_turn;
         Actions enemy_action; // Action for enemy
 
-        // Check if enemy is range
-        if(!enemy_hit_happen)
-        {
-            if (map_manager.CheckPlayerInRange(enemy_actual.GetRange(), enemy_index))
-            {
-                enemy_actual.SetAction(Actions.fight);
-            }
-        }        
+        last_state = GameState.enemy_turn;      
 
         enemy_action = enemy_actual.GetAction();
+
         switch (enemy_action)
         {
             case Actions.none:
-                communication.Subscribe(enemy_actual.GetId());
-                enemy_actual.SetAction(Actions.plan);
                 break;
             case Actions.plan:
                 //print("Plan");
                 communication.CollaborativePlan();
                 break;
-            case Actions.move:
-                enemy_actual.Move();
-                map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
-                enemy_move_happen = true;
+            case Actions.move:                
+                //map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
+                enemy_move_happen = enemy_actual.Move();
                 break;
             case Actions.fight:
-                //print("Ataco");
+                print("Id = "+enemy_actual.GetId()+"Ataco");
                 enemy_hit_happen = true;
                 enemy_actual.SetAction(Actions.pass_turn);
+                enemy_actual.Attack();
                 break;
-            case Actions.pass_turn:
+            case Actions.pass_turn:                
+                /*
                 if (enemy_move_happen)
                 {
                     map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
                     enemy_move_happen =false;
-                }
-                enemy_actual.SetAction(Actions.plan);
-                enemy_hit_happen = false;
-                state_to_return = this.UpdateEnemyActual();
+                }*/
+                //enemy_actual.SetAction(Actions.plan);
+                //enemy_hit_happen = false;
+                state_to_return = this.UpdateEnemyActual();                
                 break;
         }
 
-        if(state_to_return == GameState.player_turn)
+        return state_to_return;
+    }
+
+    /// <summary>
+    /// Update all resources of the game
+    /// </summary>
+    /// <returns> Next state of the game </returns>
+    public GameState UpdateBattle()
+    {
+        Enemy lc_enemy_aux = null;
+        GameState ret_gm_st = GameState.update_battle;
+
+        // Update game after player turn
+        if (last_state == GameState.player_turn)
         {
-            this.action_menu.SetStatusMenu(true);
+            // Update player var
+            player.SetAction(Actions.none);
+
+            // Clear enemies
+            enemy_index = 0;            
+
+
+            // Check if player move
+            if (player_move_happen)
+            {
+                player_move_happen = false;
+
+                map_manager.SetPlayer(player.GetMapPosition());
+                for(int i=0; i< enemies.Count; i++)
+                {
+                    lc_enemy_aux = enemies[i];
+                    enemy_actual.FoundEnemy(map_manager.CheckPlayerInRange(enemy_actual.GetRange(), enemy_index));
+                }
+            }
+
+            // Update enemy
+            enemy_index = 0;
+            enemy_actual = enemies[0];
+
+            // Continue game
+            ret_gm_st = GameState.enemy_turn;
+
+            StartCoroutine("WaitSeconds");
         }
 
-        return state_to_return;
+        // Update game after enemies turn
+        if(last_state == GameState.enemy_turn) 
+        {
+            // Clear var
+            enemy_actual.SetAction(Actions.plan);
+            enemy_hit_happen = false;
+
+            if (enemy_move_happen)
+            {
+                enemy_move_happen = false;
+
+                map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);                
+            }
+
+            // Continue game
+            ret_gm_st = GameState.player_turn;
+        }
+
+        last_state = GameState.update_battle;
+        return ret_gm_st;
+    }
+
+    IEnumerator WaitSeconds()
+    {
+        // your process
+        yield return new WaitForSeconds(2);
+        // continue process
     }
 }
 
@@ -268,6 +342,7 @@ public class GameManager : MonoBehaviour
 public enum GameState
 {
     game_start,
+    update_battle,
     player_turn,
     enemy_turn,
     end_fight

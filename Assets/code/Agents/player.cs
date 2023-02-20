@@ -91,6 +91,12 @@ public class Player : MonoBehaviour
     // HP
     public void SetHP(float new_hp) { this.hp = new_hp; }
 
+    public void SetPosition(Vector2 pa_new_pos) 
+    { 
+        this.position = pa_new_pos;
+        this.transform.position = pa_new_pos;
+    }
+
 
     //-------PUBLIC------------------------------------ 
     // Start : Start is called before the first frame update
@@ -163,20 +169,20 @@ public class Player : MonoBehaviour
                 // Pos relative to map
                 if(target.x < 0)
                 {
-                    map_move.Item1 -= 1;
+                    map_move.Item2 -= 1;
                 } else if(target.x > 0)
                 {
-                    map_move.Item1 += 1;
+                    map_move.Item2 += 1;
                 }
 
                 // Pos relative to map
                 if (target.y < 0)
                 {
-                    map_move.Item2 -= 1;
+                    map_move.Item1 -= 1;
                 }
                 else if (target.y > 0)
                 {
-                    map_move.Item2 += 1;
+                    map_move.Item1 += 1;
                 }
 
                 StartCoroutine("UpdatePosition");

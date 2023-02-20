@@ -68,6 +68,11 @@ public class MapManager : MonoBehaviour
     //-------GETTERS-----------------------------------
     public string GetKey() { return key; }
 
+    /// <summary>
+    /// Get enemy scene position 
+    /// </summary>
+    /// <param name="index"> Index of enemy</param>
+    /// <returns> Enemy's position </returns>
     public Vector2 GetEnemyPos(int index)
     {
         (int, int) pos_map_enemy = enemies[index];
@@ -81,6 +86,20 @@ public class MapManager : MonoBehaviour
         return pos_scene;
     }
 
+    /// <summary>
+    /// Get player scene position
+    /// </summary>
+    /// <returns>Player's position</returns>
+    public Vector2 GetPlayerPos()
+    {
+        Vector2 pos_scene = new Vector2();
+        
+        pos_scene.x = player.Item2 - Mathf.Floor(this.width / 2.0f) - 1.5f;
+        pos_scene.y = player.Item1 - Mathf.Floor(this.height / 2.0f) + 0.75f;
+
+        return pos_scene;
+    }
+
     //-------SETTERS-----------------------------------
 
     /// <summary>
@@ -90,27 +109,32 @@ public class MapManager : MonoBehaviour
     public void SetPlayer((int,int) new_pos)
     {
         map[player.Item2, player.Item1] = CellType.Empty;
+        
+        player.Item2 += new_pos.Item2;
+        player.Item1 += new_pos.Item1;
 
-        player.Item1 += new_pos.Item2;
-        player.Item2 += new_pos.Item1;
-                
         map[player.Item2, player.Item1] = CellType.Player;
     }
 
+    /// <summary>
+    /// Update enemy pos in map 
+    /// </summary>
+    /// <param name="new_pos"> New position of enemy</param>
+    /// <param name="index"> Index of enemy </param>
     public void SetEnemy((int, int) new_pos, int index)
-    {
+    {        
         if(new_pos.Item1 != 0 | new_pos.Item2 != 0)
-        {
+        {            
             (int, int) enemy_actual = enemies[index];
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
+            print("Posicion actual " + enemy_actual);
 
-            enemy_actual.Item1 += new_pos.Item2;
-            enemy_actual.Item2 += new_pos.Item1;
-
-            //print("Posicion del agente "+index+" = " + enemy_actual);
+            enemy_actual.Item2 += new_pos.Item2;
+            enemy_actual.Item1 += new_pos.Item1;
 
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
             enemies[index] = enemy_actual;
+            print("Posicion nueva " + enemy_actual);
         }        
     }
 
@@ -156,32 +180,41 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        enemies[0].Item1 = 9; enemies[0].Item2 = 14;
-        map[11, 9] = CellType.Enemy;
+        enemies[0].Item1 = 9; enemies[0].Item2 = 16;
+        enemies[1].Item1 = 11; enemies[1].Item2 = 16;
 
-        enemies[1].Item1 = 10; enemies[1].Item2 = 16;
-        map[11, 11] = CellType.Enemy;
+        foreach ( (int,int)enemy in enemies)
+        {
+            map[enemy.Item2, enemy.Item1] = CellType.Enemy;
+        }
+
     }
 
+    /// <summary>
+    /// Count enemies in player's range
+    /// </summary>
+    /// <param name="range">Player's range</param>
+    /// <returns>Number of enemies in the range</returns>
     public int CheckEnemiesInRange(int range)
     {
-        int lv_enemies_found = 0,
-            lv_hypotenuse = 0;
+        float lv_hypotenuse = 0.0f,
+              lv_range_pow = Mathf.Pow(range, 2);
+        int lv_enemies_found = 0;
 
         foreach((int, int) enemy_actual in enemies)
         {
-            lv_hypotenuse = (int)Mathf.Pow(enemy_actual.Item2 - player.Item2, 2) + (int)Mathf.Pow(enemy_actual.Item1 - player.Item1, 2);
-            lv_hypotenuse = (int)Mathf.Sqrt(lv_hypotenuse);
+            lv_hypotenuse = (float)Mathf.Pow(enemy_actual.Item2 - player.Item2, 2) + (float)Mathf.Pow(enemy_actual.Item1 - player.Item1, 2);
+            lv_hypotenuse = (float)Mathf.Sqrt(lv_hypotenuse);
 
             if(lv_hypotenuse <= range)
             {
                 lv_enemies_found++;
                 this.HighlightTile(enemy_actual.Item2, enemy_actual.Item1);
-                print("Enemigo en casilla " + enemy_actual);
             }
         }
 
         return lv_enemies_found;
+
     }
 
     /// <summary>
@@ -192,64 +225,20 @@ public class MapManager : MonoBehaviour
     /// <returns></returns>
     public bool CheckPlayerInRange(int range, int index)
     {
-        bool ret_player_found = false;
-        (int,int) enemy_actual = enemies[index];
-        CellType cell_actual = CellType.Empty;
+        float lv_hypotenuse = 0.0f,
+              lv_range_pow = Mathf.Pow(range,2);
+        bool lv_ret_found = false;
+        (int, int) ls_enemy_actual = enemies[index];
+        
+        lv_hypotenuse = (float)Mathf.Pow(this.player.Item2 - ls_enemy_actual.Item2, 2) + (float)Mathf.Pow(player.Item1 - ls_enemy_actual.Item1, 2);
+        lv_hypotenuse = Mathf.Sqrt(lv_hypotenuse);
 
-        //print("Posicion del jugador = " + player.Item2 + " , " + player.Item1);
-
-        for (int i = 0; i <= range & !ret_player_found; i++)
+        if(lv_hypotenuse <= lv_range_pow)
         {
-            for (int j = 0; j <= (range - i) & !ret_player_found; j++)
-            {
-                if (i != 0 | j != 0)
-                {
-                    
-                    cell_actual = this.GetMapCell(i + enemy_actual.Item2, j + enemy_actual.Item1);
-                    if (cell_actual == CellType.Player)
-                    {
-                        ret_player_found = true;
-                    }
-                    //print("Cell [" + (enemy_actual.Item2+i) + "," + (enemy_actual.Item1+j) + "] = " + cell_actual);
+            lv_ret_found = true;
+        }      
 
-                    if (i != 0)
-                    {
-                        cell_actual = this.GetMapCell(-i + enemy_actual.Item2, j + enemy_actual.Item1);
-                        if (cell_actual == CellType.Player)
-                        {
-                            ret_player_found = true;
-                        }
-                        //print("Cell [" + (enemy_actual.Item2 - i) + "," + (enemy_actual.Item1 + j) + "] = " + cell_actual);
-                    }
-
-
-                    if (j != 0)
-                    {
-                        cell_actual = this.GetMapCell(i + enemy_actual.Item2, -j + enemy_actual.Item1);
-                        if (cell_actual == CellType.Player)
-                        {
-                            ret_player_found= true;
-                        }
-                        //print("Cell [" + (enemy_actual.Item2 + i) + "," + (enemy_actual.Item1 - j) + "] = " + cell_actual);
-                    }
-
-
-                    if (i != 0 & j != 0)
-                    {
-                        cell_actual = this.GetMapCell(-i + enemy_actual.Item2, -j + enemy_actual.Item1);
-                        if (cell_actual == CellType.Player)
-                        {
-                            ret_player_found = true;
-                        }
-                        //print("Cell [" + (enemy_actual.Item2 - i) + "," + (enemy_actual.Item1 - j) + "] = " + cell_actual);
-                    }
-
-
-                }
-            }
-        }
-
-        return ret_player_found;
+        return lv_ret_found;
     }    
 }
 
