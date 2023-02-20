@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
     private Movement move;                  // Method to move to a position
     private Actions action_actual;          // Action to return to GM
     private SpriteRenderer sprite_renderer; // Sprite Renderer
+    private BoxCollider2D hitbox;           // Hit box
 
 
     /*
@@ -122,6 +123,9 @@ public class Player : MonoBehaviour
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
 
         this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
+        this.hitbox = gameObject.GetComponent<BoxCollider2D>();
+        this.hitbox.size = new Vector2(0.45f, 0.45f);
 
         // Methods called in the start
         this.CleanInput();

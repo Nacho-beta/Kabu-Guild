@@ -241,7 +241,7 @@ public class GameManager : MonoBehaviour
                 communication.CollaborativePlan();
                 break;
             case Actions.move:                
-                //map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
+                map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
                 enemy_move_happen = enemy_actual.Move();
                 break;
             case Actions.fight:

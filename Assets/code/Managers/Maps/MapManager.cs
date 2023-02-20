@@ -127,14 +127,14 @@ public class MapManager : MonoBehaviour
         {            
             (int, int) enemy_actual = enemies[index];
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
-            print("Posicion actual " + enemy_actual);
+            //print("Posicion actual " + enemy_actual);
 
             enemy_actual.Item2 += new_pos.Item2;
             enemy_actual.Item1 += new_pos.Item1;
 
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
             enemies[index] = enemy_actual;
-            print("Posicion nueva " + enemy_actual);
+            //print("Posicion nueva " + enemy_actual);
         }        
     }
 

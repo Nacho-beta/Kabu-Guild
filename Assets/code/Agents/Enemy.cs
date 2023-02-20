@@ -201,9 +201,14 @@ public class Enemy : MonoBehaviour
             if (move_happen)
             {
                 last_step = next_step;
-                pos_ok = false;
+                pos_ok = false;                
                 StartCoroutine("UpdatePosition");
                 return true;
+            } else
+            {
+                // Update next step        
+                next_step = path.Dequeue();
+                path.Enqueue(next_step);
             }
         }
        
@@ -259,37 +264,43 @@ public class Enemy : MonoBehaviour
             yield return null;
         }
 
-        // Update pos
-        position = this.move.getDestination();
-        
-        // Pos relative to map
-        if (next_step.x < 0)
-        {
-            map_move.Item2 -= 1;
-        }
-        else if (next_step.x > 0)
-        {
-            map_move.Item2 += 1;
-        }
+        print("Movimiento: " + this.move_made + " / " + this.max_move);
 
-        // Pos relative to map
-        if (next_step.y < 0)
+        if (this.move_made >= max_move - 1)
         {
-            map_move.Item1 -= 1;
-        }
-        else if (next_step.y > 0)
-        {
-            map_move.Item1 += 1;
-        }
-
-        // Update next step        
-        next_step = path.Dequeue();
-        path.Enqueue(next_step);
-
-        this.move_made++;
-        if (this.move_made > max_move)
-        {
+            print("Paso turno");
+            action_made = true;
             action_actual = Actions.pass_turn;
+        } else
+        {
+            // Update pos
+            position = this.move.getDestination();
+
+            // Pos relative to map
+            if (next_step.x < 0)
+            {
+                map_move.Item2 -= 1;
+            }
+            else if (next_step.x > 0)
+            {
+                map_move.Item2 += 1;
+            }
+
+            // Pos relative to map
+            if (next_step.y < 0)
+            {
+                map_move.Item1 -= 1;
+            }
+            else if (next_step.y > 0)
+            {
+                map_move.Item1 += 1;
+            }
+
+            // Update next step        
+            next_step = path.Dequeue();
+            path.Enqueue(next_step);
+
+            this.move_made++;
         }
     }
 }

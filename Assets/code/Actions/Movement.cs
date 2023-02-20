@@ -105,7 +105,7 @@ public class Movement : MonoBehaviour
                 mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", "Player", "Item");
+                mask_wall = LayerMask.GetMask("Wall", "Character", "Item");
                 break;
             default:
                 break;
@@ -132,6 +132,7 @@ public class Movement : MonoBehaviour
             elapsed_time += Time.deltaTime;
             yield return null;
         }
+        print("Destino " + destination);
 
         origin = transform.position;
         is_moving = false;
