@@ -15,14 +15,15 @@ public class Enemy : MonoBehaviour
                  stop,              // Bool indicate if is in movement
                  player_in_range,   // Bool indicate if player is in attack range
                  pos_ok,            // Bool indicate if position is updated
-                 action_made;       // Bool indicate if action was made
+                 action_made,       // Bool indicate if action was made
+                 is_moving;
     private int max_move,       // Max of move can be made
                 move_made,      // Actual move that have been made
                 id;
 
     // Array Var
     private Vector2 next_step,  // Next position for pathing
-                    last_step,  // Last position in pathfinding
+                    new_pos,    // Vector2 to move
                     position;   //Vector3(x, y, z) for position of agent
     private Queue<Vector2> path;// Queue for pathing
     private (int, int) map_move;
@@ -56,7 +57,7 @@ public class Enemy : MonoBehaviour
 
         path = new Queue<Vector2>();
         next_step = new Vector2(0, 0);
-        last_step = new Vector2(0, 0);
+        //last_step = new Vector2(0, 0);
         position = new Vector2(3, 0);
         map_move = (0, 0);
 
@@ -190,29 +191,46 @@ public class Enemy : MonoBehaviour
     /// <summary>
     /// Enemy's move 
     /// </summary>
-    /// <returns> Bool indicate success or failure </returns>
-    public bool Move()
-    {        
-        bool move_happen = false;
+    public void Move()
+    {
+        Vector2 ls_new_position;
 
-        if(last_step != next_step)
+        if (!is_moving)
         {
-            move_happen = this.move.Move(ref position, next_step, ref facing_left, name_agent);
-            if (move_happen)
+            // Update Direction        
+            next_step = path.Dequeue();
+            // If next_step is not empty
+            if(next_step != Vector2.zero)
             {
-                last_step = next_step;
-                pos_ok = false;                
-                StartCoroutine("UpdatePosition");
-                return true;
-            } else
-            {
-                // Update next step        
-                next_step = path.Dequeue();
                 path.Enqueue(next_step);
-            }
-        }
-       
-        return false;
+
+                ls_new_position = new Vector2(this.position.x, this.position.y);
+                if (next_step.x != 0.0f)
+                {
+                    // Update position in axis x
+                    ls_new_position.x += next_step.x;
+
+                    // If movement in axis X, check if flip is needed
+                    if (this.move.facing(ref this.facing_left, next_step.x))
+                    {
+                        transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+                    }
+                }
+                else if (next_step.y != 0.0f)
+                {
+                    // Update position in axis y
+                    ls_new_position.y += next_step.y;
+                }
+
+                // Check collision
+                if( !this.move.CheckCollision(this.position, ls_new_position, this.name_agent) )
+                {
+                    new_pos = ls_new_position;
+                    is_moving = true;
+                    StartCoroutine("UpdatePosition");
+                }
+            }                    
+        }                  
     }
     
     /// <summary>
@@ -253,38 +271,59 @@ public class Enemy : MonoBehaviour
     }
 
     /// <summary>
+    /// Clear var for the actual turn
+    /// </summary>
+    public void InitTurn()
+    {
+        this.move_made = 0;
+        this.pos_ok = true;
+        this.action_actual = Actions.plan;
+        this.action_made = false;
+    }
+
+    /// <summary>
     /// Update actual position with move controller
     /// </summary>
     /// <returns>Ienumerator needed for asynchronous operations</returns>
     IEnumerator UpdatePosition()
     {
-        while (!pos_ok)
+        const float lv_time_move = 0.2f;
+        float elapsed_time = 0.0f;
+
+        while (elapsed_time < lv_time_move)
         {
-            pos_ok = this.move.getPosOriDest();
+            transform.position = Vector2.Lerp(this.position, this.new_pos, (elapsed_time / lv_time_move));
+            elapsed_time += Time.deltaTime;
             yield return null;
         }
 
-        print("Movimiento: " + this.move_made + " / " + this.max_move);
+        is_moving = false;
+        this.position = this.new_pos;
+        this.move_made++;
+
+        // Pos relative to map: Axis X
+        if (next_step.x < 0)
+            map_move.Item2 -= 1;
+        else if (next_step.x > 0)
+            map_move.Item2 += 1;
+
+        // Pos relative to map: Axis Y
+        if (next_step.y < 0)
+            map_move.Item1 -= 1;
+        else if (next_step.y > 0)
+            map_move.Item1 += 1;
 
         if (this.move_made >= max_move - 1)
         {
-            print("Paso turno");
+            //print("Paso turno");
             action_made = true;
             action_actual = Actions.pass_turn;
-        } else
-        {
+        }/* else
+        {          
             // Update pos
             position = this.move.getDestination();
 
-            // Pos relative to map
-            if (next_step.x < 0)
-            {
-                map_move.Item2 -= 1;
-            }
-            else if (next_step.x > 0)
-            {
-                map_move.Item2 += 1;
-            }
+            
 
             // Pos relative to map
             if (next_step.y < 0)
@@ -301,6 +340,6 @@ public class Enemy : MonoBehaviour
             path.Enqueue(next_step);
 
             this.move_made++;
-        }
+        }*/
     }
 }

@@ -240,9 +240,8 @@ public class GameManager : MonoBehaviour
                 //print("Plan");
                 communication.CollaborativePlan();
                 break;
-            case Actions.move:                
-                map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
-                enemy_move_happen = enemy_actual.Move();
+            case Actions.move:
+                enemy_actual.Move();
                 break;
             case Actions.fight:
                 print("Id = "+enemy_actual.GetId()+"Ataco");
@@ -251,14 +250,6 @@ public class GameManager : MonoBehaviour
                 enemy_actual.Attack();
                 break;
             case Actions.pass_turn:                
-                /*
-                if (enemy_move_happen)
-                {
-                    map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);
-                    enemy_move_happen =false;
-                }*/
-                //enemy_actual.SetAction(Actions.plan);
-                //enemy_hit_happen = false;
                 state_to_return = this.UpdateEnemyActual();                
                 break;
         }
@@ -282,7 +273,11 @@ public class GameManager : MonoBehaviour
             player.SetAction(Actions.none);
 
             // Clear enemies
-            enemy_index = 0;            
+            enemy_index = 0;
+            foreach(Enemy enemy_to_update in enemies)
+            {
+                enemy_to_update.InitTurn();
+            }
 
 
             // Check if player move
@@ -294,7 +289,7 @@ public class GameManager : MonoBehaviour
                 for(int i=0; i< enemies.Count; i++)
                 {
                     lc_enemy_aux = enemies[i];
-                    enemy_actual.FoundEnemy(map_manager.CheckPlayerInRange(enemy_actual.GetRange(), enemy_index));
+                    enemy_actual.FoundEnemy(map_manager.CheckPlayerInRange(enemy_actual.GetRange(), i));                    
                 }
             }
 
@@ -315,11 +310,11 @@ public class GameManager : MonoBehaviour
             enemy_actual.SetAction(Actions.plan);
             enemy_hit_happen = false;
 
-            if (enemy_move_happen)
+            // Update map
+            for (int i = 0; i < enemies.Count; i++)
             {
-                enemy_move_happen = false;
-
-                map_manager.SetEnemy(enemy_actual.GetMapPosition(), enemy_index);                
+                lc_enemy_aux = enemies[i];
+                map_manager.SetEnemy(lc_enemy_aux.GetMapPosition(), i);
             }
 
             // Continue game

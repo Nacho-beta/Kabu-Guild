@@ -15,9 +15,9 @@ public class MapManager : MonoBehaviour
     private string key; // Key needed for communication
 
     // Array var
-    private (int,int) player;               // Position in map for player
-    private (int,int)[] enemies;            // Position in map for enemies
-   // private Vector3Int[] tile_highlighted;  // Array for position of highlighted tiles  
+    private (int,int) player;           // Position in map for player
+    private (int,int)[] enemies;        // Position in map for enemies
+    private (float,float) zero_point;   // Position equivalent to 0,0
 
     // Class var
     private CellType[,] map;   // Matrix with map info
@@ -49,6 +49,7 @@ public class MapManager : MonoBehaviour
     /// <param name="y"> Hight postiion </param>
     private void HighlightTile(int x, int y)
     {
+        print("Casilla en x = " + x + " y = " + y);
         (int, int) medium_point;
         Vector3Int grid_position = new Vector3Int();
 
@@ -56,10 +57,10 @@ public class MapManager : MonoBehaviour
         medium_point.Item2 = (int)Mathf.Floor(height / 2.0f);
 
         // Get position of tile in the world
-        //grid_position.x = 1;
-        grid_position.x = (int)Mathf.Ceil(x - (this.width / 2.0f) - 1.5f);        
+        grid_position.x = (int)Mathf.Ceil((x-1) - (this.width / 2.0f) - 1.5f);        
         grid_position.y = (int)(y - (this.height / 2.0f));
-        //grid_position.y = -1;
+
+        print("Equivalente a " + grid_position);
 
         co_tilemap.SetTileFlags(grid_position, TileFlags.None);
         co_tilemap.SetColor(grid_position, Color.red);
@@ -109,10 +110,12 @@ public class MapManager : MonoBehaviour
     public void SetPlayer((int,int) new_pos)
     {
         map[player.Item2, player.Item1] = CellType.Empty;
+        print("Posicion actual: "+player);
         
         player.Item2 += new_pos.Item2;
         player.Item1 += new_pos.Item1;
 
+        print("Posicion nueva :"+player);
         map[player.Item2, player.Item1] = CellType.Player;
     }
 
@@ -127,14 +130,12 @@ public class MapManager : MonoBehaviour
         {            
             (int, int) enemy_actual = enemies[index];
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
-            //print("Posicion actual " + enemy_actual);
 
             enemy_actual.Item2 += new_pos.Item2;
             enemy_actual.Item1 += new_pos.Item1;
 
             map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
             enemies[index] = enemy_actual;
-            //print("Posicion nueva " + enemy_actual);
         }        
     }
 

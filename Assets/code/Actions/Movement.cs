@@ -39,7 +39,10 @@ public class Movement : MonoBehaviour
             // Move object        
             if (direction.x != 0.0f)
             {
-                this.facing(ref facing_left, direction.x);
+                if(this.facing(ref facing_left, direction.x))
+                {
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+                }
                 destination.x += speed * direction.x;
             }
             else if (direction.y != 0.0f)
@@ -61,31 +64,33 @@ public class Movement : MonoBehaviour
         return false;
     }
 
-    /*
-     * Method: Facing
-     * Determinate the facing of actor, and change sprite
-     */
-    public void facing(ref bool facing_left, float input_x)
+    /// <summary>
+    /// Determinate if is needed to flip the sprite
+    /// </summary>
+    /// <param name="facing_left"> Reference to position of sprite</param>
+    /// <param name="input_x"> Direction in horizontal axis </param>
+    /// <returns> Bool indicate if flip is needed</returns>
+    public bool facing(ref bool facing_left, float input_x)
     {
-        // Local Data
-        Vector3 scale_flip = transform.localScale;
+        bool ret_flip = false;
 
-        // Function
-        if(input_x != 0)
+        if(input_x != 0.0f)
         {
-            if (input_x > 0 & facing_left) // If facing left and movement right, flip
+            // If facing left and movement right, flip
+            if (input_x > 0 & facing_left) 
             {
-                scale_flip.x *= -1;
-                transform.localScale = scale_flip;
+                ret_flip = true;
                 facing_left = false;
             }
-            else if (input_x < 0 & !facing_left) // If facing right and movement left, flip
+            // If facing right and movement left, flip
+            else if (input_x < 0 & !facing_left) 
             {
-                scale_flip.x *= -1;
-                transform.localScale = scale_flip;
+                ret_flip = true;
                 facing_left = true;
             }
-        }        
+        }
+
+        return ret_flip;
     }
 
 
@@ -93,7 +98,7 @@ public class Movement : MonoBehaviour
 
     /* CheckCollision: Determinate if collision exist
      * Return: Bool indicate if collision happen or not */
-    private bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
+    public bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
     {
         RaycastHit2D hit;
         Vector2 direction = destination - position;
@@ -132,7 +137,6 @@ public class Movement : MonoBehaviour
             elapsed_time += Time.deltaTime;
             yield return null;
         }
-        print("Destino " + destination);
 
         origin = transform.position;
         is_moving = false;
