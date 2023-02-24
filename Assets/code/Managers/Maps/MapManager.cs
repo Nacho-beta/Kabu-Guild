@@ -15,9 +15,9 @@ public class MapManager : MonoBehaviour
     private string key; // Key needed for communication
 
     // Array var
-    private (int,int) player;           // Position in map for player
-    private (int,int)[] enemies;        // Position in map for enemies
-    private (float,float) zero_point;   // Position equivalent to 0,0
+    private (int,int) player;       // Position in map for player
+    private (int,int)[] enemies;    // Position in map for enemies
+    private (int,int) zero_point;   // Position equivalent to 0,0
 
     // Class var
     private CellType[,] map;   // Matrix with map info
@@ -49,18 +49,11 @@ public class MapManager : MonoBehaviour
     /// <param name="y"> Hight postiion </param>
     private void HighlightTile(int x, int y)
     {
-        print("Casilla en x = " + x + " y = " + y);
-        (int, int) medium_point;
         Vector3Int grid_position = new Vector3Int();
 
-        medium_point.Item1 = (int)Mathf.Floor(width / 2.0f);
-        medium_point.Item2 = (int)Mathf.Floor(height / 2.0f);
-
         // Get position of tile in the world
-        grid_position.x = (int)Mathf.Ceil((x-1) - (this.width / 2.0f) - 1.5f);        
-        grid_position.y = (int)(y - (this.height / 2.0f));
-
-        print("Equivalente a " + grid_position);
+        grid_position.x = x - zero_point.Item2;
+        grid_position.y = y - zero_point.Item1;
 
         co_tilemap.SetTileFlags(grid_position, TileFlags.None);
         co_tilemap.SetColor(grid_position, Color.red);
@@ -110,12 +103,10 @@ public class MapManager : MonoBehaviour
     public void SetPlayer((int,int) new_pos)
     {
         map[player.Item2, player.Item1] = CellType.Empty;
-        print("Posicion actual: "+player);
         
         player.Item2 += new_pos.Item2;
         player.Item1 += new_pos.Item1;
 
-        print("Posicion nueva :"+player);
         map[player.Item2, player.Item1] = CellType.Player;
     }
 
@@ -188,6 +179,10 @@ public class MapManager : MonoBehaviour
         {
             map[enemy.Item2, enemy.Item1] = CellType.Enemy;
         }
+
+        // Point relative to zero
+        zero_point.Item2 = 14;
+        zero_point.Item1 = 10;
 
     }
 

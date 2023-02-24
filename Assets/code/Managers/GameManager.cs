@@ -98,7 +98,7 @@ public class GameManager : MonoBehaviour
         l_go_action_menu = GameObject.FindGameObjectWithTag("ActionMenu");
         this.action_menu = l_go_action_menu.GetComponent<ActionMenu>();
 
-        // Get reference for menu
+        // Get reference for communication channel
         l_go_communication = GameObject.FindGameObjectWithTag("Communication");
         this.communication = l_go_communication.GetComponent<CommunicationManager>();
     }
@@ -237,8 +237,7 @@ public class GameManager : MonoBehaviour
             case Actions.none:
                 break;
             case Actions.plan:
-                //print("Plan");
-                communication.CollaborativePlan();
+                enemy_actual.PathFinding();
                 break;
             case Actions.move:
                 enemy_actual.Move();
@@ -265,6 +264,7 @@ public class GameManager : MonoBehaviour
     {
         Enemy lc_enemy_aux = null;
         GameState ret_gm_st = GameState.update_battle;
+        Vector2 player_pos;
 
         // Update game after player turn
         if (last_state == GameState.player_turn)
@@ -278,6 +278,7 @@ public class GameManager : MonoBehaviour
             {
                 enemy_to_update.InitTurn();
             }
+            this.communication.CollaborativePlan();
 
 
             // Check if player move
@@ -286,10 +287,15 @@ public class GameManager : MonoBehaviour
                 player_move_happen = false;
 
                 map_manager.SetPlayer(player.GetMapPosition());
-                for(int i=0; i< enemies.Count; i++)
+                player_pos = map_manager.GetPlayerPos();
+
+                for (int i=0; i< enemies.Count; i++)
                 {
                     lc_enemy_aux = enemies[i];
-                    enemy_actual.FoundEnemy(map_manager.CheckPlayerInRange(enemy_actual.GetRange(), i));                    
+                    enemy_actual.FoundEnemy(
+                                    map_manager.CheckPlayerInRange(enemy_actual.GetRange(), i),
+                                    player_pos
+                                );                    
                 }
             }
 

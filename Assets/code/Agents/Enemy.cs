@@ -14,7 +14,6 @@ public class Enemy : MonoBehaviour
     private bool facing_left,       // Bool indicate if is facing to left or right
                  stop,              // Bool indicate if is in movement
                  player_in_range,   // Bool indicate if player is in attack range
-                 pos_ok,            // Bool indicate if position is updated
                  action_made,       // Bool indicate if action was made
                  is_moving;
     private int max_move,       // Max of move can be made
@@ -32,6 +31,7 @@ public class Enemy : MonoBehaviour
     private Movement move;          // Class for move to a position
     private MonsterType agent_type; // Type of agent 
     private Actions action_actual;  // Actual action
+    private CommunicationManager channel;
 
     // Static var
     static int id_generator = 0;
@@ -47,6 +47,8 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void Start()
     {
+        GameObject l_go_channel;
+
         name_agent = "Enemy";
         facing_left = true;
         stop = false;
@@ -57,10 +59,10 @@ public class Enemy : MonoBehaviour
 
         path = new Queue<Vector2>();
         next_step = new Vector2(0, 0);
-        //last_step = new Vector2(0, 0);
         position = new Vector2(3, 0);
         map_move = (0, 0);
 
+        
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
         agent_type = new Kobold();
         action_actual = Actions.none;
@@ -69,6 +71,10 @@ public class Enemy : MonoBehaviour
 
         id = id_generator;
         id_generator++;
+
+        // Class Reference
+        l_go_channel = GameObject.FindGameObjectWithTag("Communication");
+        this.channel = l_go_channel.GetComponent<CommunicationManager>();
     }
 
     //-------STATIC------------------------------------
@@ -246,18 +252,29 @@ public class Enemy : MonoBehaviour
         return stop;
     }
 
-    public void FoundEnemy(bool enemy_found)
+    public void FoundEnemy(bool enemy_found, Vector2 player)
     {        
         if (enemy_found) 
         {
-            player_in_range = enemy_found;
-            pos_ok = true;
+            player_in_range = true;
             this.action_actual = Actions.fight;
+
+            //Update player position in channel
+            this.channel.SetPlayerPos(player,this.id);
+
+        } else
+        {
+            if (player_in_range)
+            {
+                player_in_range = false;
+                this.channel.DeletePlayerPos(this.id);
+            }
         }
     }
 
     public Actions PathFinding()
     {
+        print("Jugador en " + this.channel.GetPlayer());
         if (path.Count != 0)
             action_actual = Actions.move;
         else
@@ -276,7 +293,6 @@ public class Enemy : MonoBehaviour
     public void InitTurn()
     {
         this.move_made = 0;
-        this.pos_ok = true;
         this.action_actual = Actions.plan;
         this.action_made = false;
     }
@@ -318,28 +334,6 @@ public class Enemy : MonoBehaviour
             //print("Paso turno");
             action_made = true;
             action_actual = Actions.pass_turn;
-        }/* else
-        {          
-            // Update pos
-            position = this.move.getDestination();
-
-            
-
-            // Pos relative to map
-            if (next_step.y < 0)
-            {
-                map_move.Item1 -= 1;
-            }
-            else if (next_step.y > 0)
-            {
-                map_move.Item1 += 1;
-            }
-
-            // Update next step        
-            next_step = path.Dequeue();
-            path.Enqueue(next_step);
-
-            this.move_made++;
-        }*/
+        }
     }
 }
