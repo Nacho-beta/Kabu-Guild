@@ -81,6 +81,13 @@ public class MapManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Get enemy map position 
+    /// </summary>
+    /// <param name="index"> Index of enemy</param>
+    /// <returns> Enemy's map position </returns>
+    public (int, int) GetEnemyMapPos(int index) { return enemies[index]; }
+
+    /// <summary>
     /// Get player scene position
     /// </summary>
     /// <returns>Player's position</returns>
@@ -93,6 +100,8 @@ public class MapManager : MonoBehaviour
 
         return pos_scene;
     }
+
+    public int GetHeight() { return this.height; }
 
     //-------SETTERS-----------------------------------
 
@@ -116,18 +125,15 @@ public class MapManager : MonoBehaviour
     /// <param name="new_pos"> New position of enemy</param>
     /// <param name="index"> Index of enemy </param>
     public void SetEnemy((int, int) new_pos, int index)
-    {        
-        if(new_pos.Item1 != 0 | new_pos.Item2 != 0)
-        {            
-            (int, int) enemy_actual = enemies[index];
-            map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
+    {
+        (int, int) enemy_actual = enemies[index];
+        map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
 
-            enemy_actual.Item2 += new_pos.Item2;
-            enemy_actual.Item1 += new_pos.Item1;
+        enemy_actual.Item2 = new_pos.Item2;
+        enemy_actual.Item1 = new_pos.Item1;
 
-            map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
-            enemies[index] = enemy_actual;
-        }        
+        map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
+        enemies[index] = enemy_actual;
     }
 
     // Get for a cell in the map

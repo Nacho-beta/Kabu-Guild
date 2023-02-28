@@ -147,18 +147,18 @@ public class GameManager : MonoBehaviour
         last_state= GameState.game_start;
 
         // Map generation
-        map_manager.GenerateDesertHill();               
-          
+        map_manager.GenerateDesertHill();
+
         // Comunication init
-        this.communication.SetKey(map_manager.GetKey());
+        this.communication.Initialize(map_manager.GetKey(), map_manager.GetHeight());
 
         // Initialization for enemies
         for(int i=0; i<enemies.Count; i++)
         {
             enemy_actual = enemies[i];
             enemy_actual.SetAction(Actions.plan);
-            enemy_actual.SetPosition(map_manager.GetEnemyPos(i));
-
+            enemy_actual.SetPosition(map_manager.GetEnemyMapPos(i),
+                                     map_manager.GetEnemyPos(i));
             communication.Subscribe(enemy_actual.GetId());
         }
 
@@ -320,7 +320,8 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i < enemies.Count; i++)
             {
                 lc_enemy_aux = enemies[i];
-                map_manager.SetEnemy(lc_enemy_aux.GetMapPosition(), i);
+                //map_manager.SetEnemy(lc_enemy_aux.GetMapPosition(), i);
+                map_manager.SetEnemy(lc_enemy_aux.GetPosInMap(), i);
             }
 
             // Continue game

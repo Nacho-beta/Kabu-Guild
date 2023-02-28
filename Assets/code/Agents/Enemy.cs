@@ -21,11 +21,13 @@ public class Enemy : MonoBehaviour
                 id;
 
     // Array Var
-    private Vector2 next_step,  // Next position for pathing
-                    new_pos,    // Vector2 to move
-                    position;   //Vector3(x, y, z) for position of agent
-    private Queue<Vector2> path;// Queue for pathing
-    private (int, int) map_move;
+    private Vector2 next_step,      // Next position for pathing
+                    new_pos,        // Vector2 to move
+                    target,         // Vector2 to reach
+                    position;       // Vector3(x, y, z) for position of agent
+    private Queue<Vector2> path;    // Queue for pathing
+    private (int, int) map_position;// Position in map
+
 
     // Class var
     private Movement move;          // Class for move to a position
@@ -60,8 +62,6 @@ public class Enemy : MonoBehaviour
         path = new Queue<Vector2>();
         next_step = new Vector2(0, 0);
         position = new Vector2(3, 0);
-        map_move = (0, 0);
-
         
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
         agent_type = new Kobold();
@@ -96,7 +96,6 @@ public class Enemy : MonoBehaviour
         ret_enemy.path = new Queue<Vector2>();
         ret_enemy.next_step = new Vector2(1, 0);
         ret_enemy.position = new Vector2(3, 0);
-        ret_enemy.map_move = (0, 0);
 
         ret_enemy.agent_type = new Kobold();
         ret_enemy.action_actual = Actions.none;
@@ -112,21 +111,43 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void FillPath()
     {
-        Vector2 new_point = new Vector2(-1, 0);
+        Vector2 new_step = new Vector2();
 
-        path.Enqueue(new_point);
+        if(target.y < position.y)
+        {
+            new_step.x = 0;
+            new_step.y = -1;
+            for(int i = (int)position.y; i>=(int)target.y; i--)
+            {
+                path.Enqueue(new_step);
+            }
+        } else if(target.y > position.y)
+        {
+            new_step.x = 0;
+            new_step.x = 1;
+            for (int i = (int)position.y; i <= (int)target.y; i++)
+            {
+                path.Enqueue(new_step);
+            }
+        }
 
-        new_point = new Vector2(0, 1);
-        path.Enqueue(new_point);
-
-        new_point = new Vector2(1, 0);
-        path.Enqueue(new_point);
-
-        new_point = new Vector2(0, -1);
-        path.Enqueue(new_point);
-
-        next_step = path.Dequeue();
-        path.Enqueue(next_step);
+        if(target.x < position.x)
+        {
+            new_step.x = -1;
+            new_step.y = 0;            
+            for (int i = (int)position.x; i >= (int)target.x; i--)
+            {
+                path.Enqueue(new_step);
+            }
+        } else if(target.x > position.x)
+        {
+            new_step.x = 1;
+            new_step.y = 0;
+            for (int i = (int)position.x; i <= (int)target.x; i++)
+            {
+                path.Enqueue(new_step);
+            }
+        }
     }
 
     //-------GETTERS-----------------------------------   
@@ -165,33 +186,39 @@ public class Enemy : MonoBehaviour
     /// Get for ID
     /// </summary>
     /// <returns> Id of the enemy </returns>
-    public int GetId() { return id; }
+    public int GetId() { return id; }   
 
     /// <summary>
-    /// Get map position
+    /// Return position in the map
     /// </summary>
-    /// <returns>Get player's pos relative to map manager</returns>
-    public (int, int) GetMapPosition()
-    {
-        (int, int) map_position = map_move;
-        map_move = (0, 0);
-
-        return map_position;
-    }
-
+    /// <returns> Position in map </returns>
+    public (int, int) GetPosInMap() { return map_position; }
 
     //-------SETTERS-----------------------------------   
     /// <summary>
     /// Update position
     /// </summary>
     /// <param name="new_pos"> new position</param>
-    public void SetPosition(Vector2 new_pos) { 
-        position = new_pos;
-        this.transform.position = new_pos;
+    public void SetPosition( (int, int) new_map_pos, Vector2 new_pos) {
+        map_position = new_map_pos;
+
+        position= new_pos;
+        this.transform.position = position;
+
+        print("Posicion en el mapa " + this.map_position);
     }
 
+    /// <summary>
+    /// Set Action for enemy
+    /// </summary>
+    /// <param name="new_action"> New action </param>
     public void SetAction(Actions new_action) { action_actual = new_action; }
 
+    /// <summary>
+    /// Set new position for target
+    /// </summary>
+    /// <param name="new_target">New position to be the target</param>
+    public void SetTarget(Vector2 new_target) { print("Mi nuevo objetivo es " + new_target); this.target= new_target; }
 
     //-------PUBLIC------------------------------------
     /// <summary>
@@ -274,7 +301,9 @@ public class Enemy : MonoBehaviour
 
     public Actions PathFinding()
     {
-        print("Jugador en " + this.channel.GetPlayer());
+        print("Mi objetivo es " + this.target);
+        this.FillPath();
+
         if (path.Count != 0)
             action_actual = Actions.move;
         else
@@ -319,19 +348,18 @@ public class Enemy : MonoBehaviour
 
         // Pos relative to map: Axis X
         if (next_step.x < 0)
-            map_move.Item2 -= 1;
+            map_position.Item2 -= 1;
         else if (next_step.x > 0)
-            map_move.Item2 += 1;
+            map_position.Item2 += 1;
 
         // Pos relative to map: Axis Y
         if (next_step.y < 0)
-            map_move.Item1 -= 1;
+            map_position.Item1 -= 1;
         else if (next_step.y > 0)
-            map_move.Item1 += 1;
+            map_position.Item1 += 1;
 
         if (this.move_made >= max_move - 1)
         {
-            //print("Paso turno");
             action_made = true;
             action_actual = Actions.pass_turn;
         }
