@@ -74,8 +74,8 @@ public class MapManager : MonoBehaviour
         Vector2 pos_scene = new Vector2();
 
         //pos_scene.x = pos_map_enemy.Item2 - Mathf.Ceil(this.width / 2.0f) + 0.5f;
-        pos_scene.x = pos_map_enemy.Item2 - Mathf.Floor(this.width/2.0f)  - 1.5f;
-        pos_scene.y = pos_map_enemy.Item1 - Mathf.Floor(this.height / 2) + 0.75f;
+        pos_scene.x = pos_map_enemy.Item2 - this.zero_point.Item2  + 0.5f;
+        pos_scene.y = pos_map_enemy.Item1 - this.zero_point.Item1 + 0.75f;
 
         return pos_scene;
     }
@@ -95,13 +95,27 @@ public class MapManager : MonoBehaviour
     {
         Vector2 pos_scene = new Vector2();
         
-        pos_scene.x = player.Item2 - Mathf.Floor(this.width / 2.0f) - 1.5f;
-        pos_scene.y = player.Item1 - Mathf.Floor(this.height / 2.0f) + 0.75f;
+        pos_scene.x = player.Item2 - this.zero_point.Item2 + 0.5f;
+        pos_scene.y = player.Item1 - this.zero_point.Item1 + 0.75f;
 
         return pos_scene;
     }
 
+    /// <summary>
+    /// Get Heigth of map
+    /// </summary>
+    /// <returns>Heigth of map</returns>
     public int GetHeight() { return this.height; }
+
+    /// <summary>
+    /// Get height equal to y = 0.0f
+    /// </summary>
+    /// <returns>Zero height</returns>
+    public int GetZeroHeight() { return this.zero_point.Item1; }
+
+    public float GetRightEdge() { return this.width - this.zero_point.Item2 + 0.5f; }
+    
+    public float GetLeftEdge() { return 0 - this.zero_point.Item2 + 0.5f; }
 
     //-------SETTERS-----------------------------------
 

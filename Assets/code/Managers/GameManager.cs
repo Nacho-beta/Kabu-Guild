@@ -150,17 +150,32 @@ public class GameManager : MonoBehaviour
         map_manager.GenerateDesertHill();
 
         // Comunication init
-        this.communication.Initialize(map_manager.GetKey(), map_manager.GetHeight());
+        this.communication.Initialize(  map_manager.GetKey(), 
+                                        map_manager.GetHeight(), 
+                                        map_manager.GetZeroHeight()
+                                      );
 
         // Initialization for enemies
         for(int i=0; i<enemies.Count; i++)
         {
+            // Get enemy actual
             enemy_actual = enemies[i];
+
+            // Set action
             enemy_actual.SetAction(Actions.plan);
+
+            // Set position
             enemy_actual.SetPosition(map_manager.GetEnemyMapPos(i),
                                      map_manager.GetEnemyPos(i));
+
+            // Set limits
+            enemy_actual.SetLimitRight(map_manager.GetRightEdge());
+            enemy_actual.SetLimitLeft(map_manager.GetLeftEdge());
+
+            // Subscribe to communication channel
             communication.Subscribe(enemy_actual.GetId());
         }
+        this.communication.DivideMap();
 
         // Player init
         this.player.SetPosition(map_manager.GetPlayerPos());
@@ -231,7 +246,7 @@ public class GameManager : MonoBehaviour
         last_state = GameState.enemy_turn;      
 
         enemy_action = enemy_actual.GetAction();
-
+        //print("Loop en " + enemy_action);
         switch (enemy_action)
         {
             case Actions.none:
@@ -277,8 +292,7 @@ public class GameManager : MonoBehaviour
             foreach(Enemy enemy_to_update in enemies)
             {
                 enemy_to_update.InitTurn();
-            }
-            this.communication.CollaborativePlan();
+            }            
 
 
             // Check if player move
@@ -292,8 +306,8 @@ public class GameManager : MonoBehaviour
                 for (int i=0; i< enemies.Count; i++)
                 {
                     lc_enemy_aux = enemies[i];
-                    enemy_actual.FoundEnemy(
-                                    map_manager.CheckPlayerInRange(enemy_actual.GetRange(), i),
+                    lc_enemy_aux.FoundEnemy(
+                                    map_manager.CheckPlayerInRange(lc_enemy_aux.GetRange(), i),
                                     player_pos
                                 );                    
                 }

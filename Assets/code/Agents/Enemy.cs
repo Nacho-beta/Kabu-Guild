@@ -15,10 +15,16 @@ public class Enemy : MonoBehaviour
                  stop,              // Bool indicate if is in movement
                  player_in_range,   // Bool indicate if player is in attack range
                  action_made,       // Bool indicate if action was made
-                 is_moving;
+                 is_moving,
+                 facing_up;         // Bool indicate if enemy come from upside
     private int max_move,       // Max of move can be made
                 move_made,      // Actual move that have been made
-                id;
+                id;             // Enemy's Id
+
+    private float limit_down_move,   // Inferior limit to move in Y axis
+                  limit_up_move,     // Superior limit to move in Y axis
+                  limit_right_move,  // Superior limit to move in X axis
+                  limit_left_move;   // Inferior limit to move in X axis
 
     // Array Var
     private Vector2 next_step,      // Next position for pathing
@@ -27,16 +33,18 @@ public class Enemy : MonoBehaviour
                     position;       // Vector3(x, y, z) for position of agent
     private Queue<Vector2> path;    // Queue for pathing
     private (int, int) map_position;// Position in map
+    private List<Vector2> direction;// Sensors of agent
 
 
     // Class var
-    private Movement move;          // Class for move to a position
-    private MonsterType agent_type; // Type of agent 
-    private Actions action_actual;  // Actual action
-    private CommunicationManager channel;
+    private Movement move;                  // Class for move to a position
+    private MonsterType agent_type;         // Type of agent 
+    private Actions action_actual;          // Actual action
+    private CommunicationManager channel;   // Agent's Channel
+    private MapManager map;                 // Map of the Game
 
     // Static var
-    static int id_generator = 0;
+    static int id_generator = 0;    // Id generator
 
     /*
      * ------------------------------------------------------
@@ -50,6 +58,7 @@ public class Enemy : MonoBehaviour
     public void Start()
     {
         GameObject l_go_channel;
+        Vector2 new_sensor;
 
         name_agent = "Enemy";
         facing_left = true;
@@ -75,6 +84,11 @@ public class Enemy : MonoBehaviour
         // Class Reference
         l_go_channel = GameObject.FindGameObjectWithTag("Communication");
         this.channel = l_go_channel.GetComponent<CommunicationManager>();
+
+        // Fill sensors vector
+        new_sensor.x = this.GetRange();
+
+
     }
 
     //-------STATIC------------------------------------
@@ -111,6 +125,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void FillPath()
     {
+        path.Clear();
         Vector2 new_step = new Vector2();
 
         if(target.y < position.y)
@@ -124,7 +139,7 @@ public class Enemy : MonoBehaviour
         } else if(target.y > position.y)
         {
             new_step.x = 0;
-            new_step.x = 1;
+            new_step.y = 1;
             for (int i = (int)position.y; i <= (int)target.y; i++)
             {
                 path.Enqueue(new_step);
@@ -150,6 +165,67 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calculate next position
+    /// </summary>
+    private void CalculateTarget()
+    {
+        if (this.channel.IsPlayerLocated())
+        {
+            target = this.channel.GetPlayer();
+        }
+        else
+        {
+            if (next_step.x != 0)
+            {
+                // Movement needed up/down
+                target.x = position.x;
+
+                if (facing_up)
+                {
+                    // If facing up = true -> Enemy come from bottom -> Enemy move to bottom
+                    facing_up = false;
+                    target.y = position.y + 2 * this.GetRange();
+
+                    // If target out of bound, position in the limit
+                    if (target.y > this.limit_up_move) { target.y = this.limit_up_move; }
+                }
+                else
+                {
+                    // If facing up = false -> Enemy come from top -> Enemy move to top
+                    facing_up = true;
+                    target.y = position.y - 2 * this.GetRange();
+
+                    // If target out of bound, position in the limit
+                    if (target.y < this.limit_down_move) { target.y = this.limit_down_move; }
+                }
+            }
+            else
+            {
+                // Movement needed left/right
+                target.y = position.y;
+
+                if (facing_left)
+                {
+                    // If facing left = true -> Enemy come from right -> Enemy move to right
+                    target.x = this.limit_right_move;
+                }
+                else
+                {
+                    // If facing left = false -> Enemy come from left -> Enemy move to left
+                    target.x = this.limit_left_move;
+                }
+            }
+
+            this.FillPath();
+        }        
+    }
+
+    private void PostMovementActions()
+    {
+        // Check if player is in range
+        
+    }
     //-------GETTERS-----------------------------------   
     /// <summary>
     /// Get HP of Enemy
@@ -203,6 +279,7 @@ public class Enemy : MonoBehaviour
         map_position = new_map_pos;
 
         position= new_pos;
+        target = position;
         this.transform.position = position;
 
         print("Posicion en el mapa " + this.map_position);
@@ -220,22 +297,50 @@ public class Enemy : MonoBehaviour
     /// <param name="new_target">New position to be the target</param>
     public void SetTarget(Vector2 new_target) { print("Mi nuevo objetivo es " + new_target); this.target= new_target; }
 
+    /// <summary>
+    /// Set for limit move up
+    /// </summary>
+    /// <param name="new_limit"> New limit</param>
+    public void SetLimitUp(float new_limit) { this.limit_up_move = new_limit; }
+
+    /// <summary>
+    /// Set for limit move down
+    /// </summary>
+    /// <param name="new_limit"> New limit</param>
+    public void SetLimitDown(float new_limit) { this.limit_down_move = new_limit; }
+
+    /// <summary>
+    /// Set right limit
+    /// </summary>
+    /// <param name="new_limit"> New limit</param>
+    public void SetLimitRight(float new_limit) { this.limit_right_move = new_limit; }
+
+    /// <summary>
+    /// Set left limit
+    /// </summary>
+    /// <param name="new_limit"> New limit</param>
+    public void SetLimitLeft(float new_limit) { this.limit_left_move = new_limit; }
+
     //-------PUBLIC------------------------------------
     /// <summary>
     /// Enemy's move 
     /// </summary>
-    public void Move()
+    public bool Move()
     {
-        Vector2 ls_new_position;
+        Vector2 ls_new_position;     
 
         if (!is_moving)
         {
-            // Update Direction        
+            // Update Direction
+            if(path.Count == 0)
+            {
+                this.CalculateTarget();
+            }
             next_step = path.Dequeue();
+            
             // If next_step is not empty
             if(next_step != Vector2.zero)
             {
-                path.Enqueue(next_step);
 
                 ls_new_position = new Vector2(this.position.x, this.position.y);
                 if (next_step.x != 0.0f)
@@ -261,9 +366,14 @@ public class Enemy : MonoBehaviour
                     new_pos = ls_new_position;
                     is_moving = true;
                     StartCoroutine("UpdatePosition");
+                } else
+                {
+                    this.CalculateTarget();
                 }
-            }                    
-        }                  
+            }           
+        }
+
+        return true;
     }
     
     /// <summary>
@@ -301,13 +411,20 @@ public class Enemy : MonoBehaviour
 
     public Actions PathFinding()
     {
-        print("Mi objetivo es " + this.target);
-        this.FillPath();
+        action_actual = Actions.move;
 
-        if (path.Count != 0)
-            action_actual = Actions.move;
-        else
+        if (this.action_made)
+        {
             action_actual = Actions.pass_turn;
+        }
+
+        // If target was reached, calculate new target
+        if(this.position == this.target)
+        {
+            this.CalculateTarget();
+        }
+        print("Mi objetivo es " + this.target);
+        
         return action_actual;
     }
 
@@ -358,10 +475,11 @@ public class Enemy : MonoBehaviour
         else if (next_step.y > 0)
             map_position.Item1 += 1;
 
+        action_actual = Actions.plan;
+
         if (this.move_made >= max_move - 1)
         {
             action_made = true;
-            action_actual = Actions.pass_turn;
         }
     }
 }
