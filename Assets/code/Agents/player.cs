@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
     private Movement move;                  // Method to move to a position
     private Actions action_actual;          // Action to return to GM
     private SpriteRenderer sprite_renderer; // Sprite Renderer
+    private BoxCollider2D hitbox;           // Hit box
 
 
     /*
@@ -91,6 +92,12 @@ public class Player : MonoBehaviour
     // HP
     public void SetHP(float new_hp) { this.hp = new_hp; }
 
+    public void SetPosition(Vector2 pa_new_pos) 
+    { 
+        this.position = pa_new_pos;
+        this.transform.position = pa_new_pos;
+    }
+
 
     //-------PUBLIC------------------------------------ 
     // Start : Start is called before the first frame update
@@ -116,6 +123,9 @@ public class Player : MonoBehaviour
         move = gameObject.AddComponent(typeof(Movement)) as Movement;
 
         this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
+        this.hitbox = gameObject.GetComponent<BoxCollider2D>();
+        this.hitbox.size = new Vector2(0.45f, 0.45f);
 
         // Methods called in the start
         this.CleanInput();
@@ -163,20 +173,20 @@ public class Player : MonoBehaviour
                 // Pos relative to map
                 if(target.x < 0)
                 {
-                    map_move.Item1 -= 1;
+                    map_move.Item2 -= 1;
                 } else if(target.x > 0)
                 {
-                    map_move.Item1 += 1;
+                    map_move.Item2 += 1;
                 }
 
                 // Pos relative to map
                 if (target.y < 0)
                 {
-                    map_move.Item2 -= 1;
+                    map_move.Item1 -= 1;
                 }
                 else if (target.y > 0)
                 {
-                    map_move.Item2 += 1;
+                    map_move.Item1 += 1;
                 }
 
                 StartCoroutine("UpdatePosition");

@@ -22,10 +22,18 @@ public class Movement : MonoBehaviour
     public bool getPosOriDest() { return pos_eq_dest; }
 
     public Vector2 getDestination() { return destination; }
-    // Public
 
-    /* Move: Move the actor around the map
-     * Return: Bool indicate if collision happen or not */
+    //-------------------------------------------------
+    //-------PUBLIC------------------------------------
+    //-------------------------------------------------
+    /// <summary>
+    /// Move agent around the map
+    /// </summary>
+    /// <param name="position"> Start position of movement</param>
+    /// <param name="direction">Direction of movement</param>
+    /// <param name="facing_left"> Bool indicate if facing left or right </param>
+    /// <param name="name_agent"> Agent type</param>
+    /// <returns> Bool indicate if hit happen</returns>
     public bool Move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
     {
         if(!is_moving)
@@ -39,7 +47,10 @@ public class Movement : MonoBehaviour
             // Move object        
             if (direction.x != 0.0f)
             {
-                this.facing(ref facing_left, direction.x);
+                if(this.facing(ref facing_left, direction.x))
+                {
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+                }
                 destination.x += speed * direction.x;
             }
             else if (direction.y != 0.0f)
@@ -61,39 +72,48 @@ public class Movement : MonoBehaviour
         return false;
     }
 
-    /*
-     * Method: Facing
-     * Determinate the facing of actor, and change sprite
-     */
-    public void facing(ref bool facing_left, float input_x)
+    /// <summary>
+    /// Determinate if is needed to flip the sprite
+    /// </summary>
+    /// <param name="facing_left"> Reference to position of sprite</param>
+    /// <param name="input_x"> Direction in horizontal axis </param>
+    /// <returns> Bool indicate if flip is needed</returns>
+    public bool facing(ref bool facing_left, float input_x)
     {
-        // Local Data
-        Vector3 scale_flip = transform.localScale;
+        bool ret_flip = false;
 
-        // Function
-        if(input_x != 0)
+        if(input_x != 0.0f)
         {
-            if (input_x > 0 & facing_left) // If facing left and movement right, flip
+            // If facing left and movement right, flip
+            if (input_x > 0 & facing_left) 
             {
-                scale_flip.x *= -1;
-                transform.localScale = scale_flip;
+                ret_flip = true;
                 facing_left = false;
             }
-            else if (input_x < 0 & !facing_left) // If facing right and movement left, flip
+            // If facing right and movement left, flip
+            else if (input_x < 0 & !facing_left) 
             {
-                scale_flip.x *= -1;
-                transform.localScale = scale_flip;
+                ret_flip = true;
                 facing_left = true;
             }
-        }        
+        }
+
+        return ret_flip;
     }
 
 
-    // Private
+    //-------------------------------------------------
+    //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
 
-    /* CheckCollision: Determinate if collision exist
-     * Return: Bool indicate if collision happen or not */
-    private bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
+    /// <summary>
+    /// Determinate if collision happen
+    /// </summary>
+    /// <param name="position"> Position of agent</param>
+    /// <param name="destination"> Position to check if hit happen</param>
+    /// <param name="name_agent"> Agent type</param>
+    /// <returns> Bool indicate if hit happen </returns>
+    public bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
     {
         RaycastHit2D hit;
         Vector2 direction = destination - position;
@@ -105,7 +125,7 @@ public class Movement : MonoBehaviour
                 mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", /*"Player",*/ "Item");
+                mask_wall = LayerMask.GetMask("Wall", "Character", "Item", "Enemy");
                 break;
             default:
                 break;
@@ -113,6 +133,28 @@ public class Movement : MonoBehaviour
 
         hit = Physics2D.Raycast(position, direction, speed, mask_wall);
         if(hit.collider != null )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Version of method checkcollision but only detects wall
+    /// </summary>
+    /// <param name="position"> Position of agent</param>
+    /// <param name="destination"> Position to check</param>
+    /// <returns> Bool indicate if collision happen</returns>
+    public bool CheckCollisionWall(Vector2 position, Vector2 destination)
+    {
+        RaycastHit2D hit;
+        Vector2 direction = destination - position;
+        LayerMask mask_wall = new LayerMask();
+        mask_wall = LayerMask.GetMask("Wall");
+
+        hit = Physics2D.Raycast(position, direction, speed, mask_wall);
+        if (hit.collider != null)
         {
             return true;
         }
