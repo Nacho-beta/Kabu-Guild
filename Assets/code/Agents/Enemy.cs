@@ -119,7 +119,9 @@ public class Enemy : MonoBehaviour
         return ret_enemy;
     }
 
+    //-------------------------------------------------
     //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
     /// <summary>
     /// Fill pathfinding
     /// </summary>
@@ -205,22 +207,16 @@ public class Enemy : MonoBehaviour
 
                 if (facing_up)
                 {
-                    // If facing up = true -> Enemy come from bottom -> Enemy move to bottom
-                    facing_up = false;
+                    // If facing up = true -> Enemy come from bottom -> Enemy move to top                    
                     target.y = position.y + 2 * this.GetRange();
-
-                    // If target out of bound, position in the limit
-                    if (target.y > this.limit_up_move) { target.y = this.limit_up_move; }
                 }
                 else
                 {
-                    // If facing up = false -> Enemy come from top -> Enemy move to top
-                    facing_up = true;
+                    // If facing up = false -> Enemy come from top -> Enemy move to bottom
                     target.y = position.y - 2 * this.GetRange();
-
-                    // If target out of bound, position in the limit
-                    if (target.y < this.limit_down_move) { target.y = this.limit_down_move; }
                 }
+
+                this.TransformPosInLimit(target);
             }
             else
             {
@@ -312,7 +308,83 @@ public class Enemy : MonoBehaviour
             action_actual = Actions.pass_turn;
         }
     }
+    
+    /// <summary>
+    /// Surround obstacle in the path
+    /// </summary>
+    private void SurroundObstacle()
+    {
+        Vector2 new_step = new Vector2();
+        Queue<Vector2> new_path = new Queue<Vector2>();
+
+        if (this.next_step.x > 0)
+        {
+            new_step.x = 0;
+            new_step.y = -1;
+        } else if(this.next_step.x < 0)
+        {
+            new_step.x = 0;
+            new_step.y = 1;
+        } else if(this.next_step.y > 0)
+        {
+            new_step.x = 1;
+            new_step.y = 0;
+        } else if(this.next_step.y < 0)
+        {
+            new_step.x = -1;
+            new_step.y = 0;
+        }
+
+        new_path.Enqueue(new_step);
+        foreach(Vector2 step in this.path)
+        {
+            new_path.Enqueue(step);
+        }
+
+        path = new_path;
+    }
+
+    /// <summary>
+    /// If position exceed the limits, this function chnage the position to one next to the limit
+    /// </summary>
+    /// <param name="position"> Position to transform </param>
+    /// <returns> Bool which value represent if change has happen </returns>
+    private bool TransformPosInLimit(Vector2 position)
+    {
+        bool ret = false;
+
+        if(position.y > this.limit_up_move - 0.5)
+        {
+            position.y = this.limit_up_move;
+            ret = true;
+            this.facing_up = false;
+        }
+
+        if (position.y < this.limit_down_move + 0.5)
+        {
+            position.y = this.limit_down_move;
+            ret = true;
+            this.facing_up = true;
+        }
+
+        if (position.x < this.limit_left_move)
+        {
+            position.x = this.limit_left_move;
+            ret = true;
+        }
+
+        if (position.x > this.limit_right_move)
+        {
+            position.x = this.limit_right_move;
+            ret = true;
+        }
+
+        return ret;
+    }
+
+    //-------------------------------------------------   
     //-------GETTERS-----------------------------------   
+    //-------------------------------------------------   
     /// <summary>
     /// Get HP of Enemy
     /// </summary>
@@ -431,8 +503,7 @@ public class Enemy : MonoBehaviour
             
             // If next_step is not empty
             if(next_step != Vector2.zero)
-            {
-
+            {                
                 ls_new_position = new Vector2(this.position.x, this.position.y);
                 if (next_step.x != 0.0f)
                 {
@@ -451,15 +522,24 @@ public class Enemy : MonoBehaviour
                     ls_new_position.y += next_step.y;
                 }
 
+                this.TransformPosInLimit(ls_new_position);
+
                 // Check collision
-                if( !this.move.CheckCollision(this.position, ls_new_position, this.name_agent) )
+                if ( !this.move.CheckCollision(this.position, ls_new_position, this.name_agent) )
                 {
                     new_pos = ls_new_position;
                     is_moving = true;
                     StartCoroutine("UpdatePosition");
                 } else
                 {
-                    this.CalculateTarget();
+                    if(this.move.CheckCollisionWall(this.position, ls_new_position))
+                    {
+                        this.CalculateTarget();
+                    }
+                    else
+                    {
+                        this.SurroundObstacle();
+                    }
                 }
             }           
         }

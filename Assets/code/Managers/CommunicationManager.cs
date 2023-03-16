@@ -205,7 +205,7 @@ public class CommunicationManager : MonoBehaviour
             }
             else
             {
-                lt_agents_copy[lv_iter_best_agent].SetLimitUp( (lv_target + lv_division_heigth) - zero_heigth + 0.75f);
+                lt_agents_copy[lv_iter_best_agent].SetLimitUp( (lv_target + lv_division_heigth - 1) - zero_heigth + 0.75f);
                 lt_agents_copy[lv_iter_best_agent].SetLimitDown( lv_target - zero_heigth + 0.75f);
             }
             

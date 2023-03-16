@@ -22,10 +22,18 @@ public class Movement : MonoBehaviour
     public bool getPosOriDest() { return pos_eq_dest; }
 
     public Vector2 getDestination() { return destination; }
-    // Public
 
-    /* Move: Move the actor around the map
-     * Return: Bool indicate if collision happen or not */
+    //-------------------------------------------------
+    //-------PUBLIC------------------------------------
+    //-------------------------------------------------
+    /// <summary>
+    /// Move agent around the map
+    /// </summary>
+    /// <param name="position"> Start position of movement</param>
+    /// <param name="direction">Direction of movement</param>
+    /// <param name="facing_left"> Bool indicate if facing left or right </param>
+    /// <param name="name_agent"> Agent type</param>
+    /// <returns> Bool indicate if hit happen</returns>
     public bool Move(ref Vector2 position, Vector2 direction, ref bool facing_left, string name_agent)
     {
         if(!is_moving)
@@ -94,10 +102,17 @@ public class Movement : MonoBehaviour
     }
 
 
-    // Private
+    //-------------------------------------------------
+    //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
 
-    /* CheckCollision: Determinate if collision exist
-     * Return: Bool indicate if collision happen or not */
+    /// <summary>
+    /// Determinate if collision happen
+    /// </summary>
+    /// <param name="position"> Position of agent</param>
+    /// <param name="destination"> Position to check if hit happen</param>
+    /// <param name="name_agent"> Agent type</param>
+    /// <returns> Bool indicate if hit happen </returns>
     public bool CheckCollision(Vector2 position, Vector2 destination, string name_agent)
     {
         RaycastHit2D hit;
@@ -110,7 +125,7 @@ public class Movement : MonoBehaviour
                 mask_wall = LayerMask.GetMask("Wall", "Enemy", "Item");
                 break;
             case AgentEnum.Agent.Enemy:
-                mask_wall = LayerMask.GetMask("Wall", "Character", "Item");
+                mask_wall = LayerMask.GetMask("Wall", "Character", "Item", "Enemy");
                 break;
             default:
                 break;
@@ -118,6 +133,28 @@ public class Movement : MonoBehaviour
 
         hit = Physics2D.Raycast(position, direction, speed, mask_wall);
         if(hit.collider != null )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Version of method checkcollision but only detects wall
+    /// </summary>
+    /// <param name="position"> Position of agent</param>
+    /// <param name="destination"> Position to check</param>
+    /// <returns> Bool indicate if collision happen</returns>
+    public bool CheckCollisionWall(Vector2 position, Vector2 destination)
+    {
+        RaycastHit2D hit;
+        Vector2 direction = destination - position;
+        LayerMask mask_wall = new LayerMask();
+        mask_wall = LayerMask.GetMask("Wall");
+
+        hit = Physics2D.Raycast(position, direction, speed, mask_wall);
+        if (hit.collider != null)
         {
             return true;
         }

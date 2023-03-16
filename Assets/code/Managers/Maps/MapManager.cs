@@ -183,29 +183,24 @@ public class MapManager : MonoBehaviour
         key = "Kobold Hill";
 
         // Fill map array
-        width = 25; height = 21;
+        width = 11; height = 12;
         map = new CellType[height, width];
 
         for (int i = 0; i < height; i++)
         {
             for (int j = 0; j < width; j++)
             {
-                if (i == 9 & j == 13)
-                {
-                    player.Item1 = 9; player.Item2 = 13;
-                    map[i, j] = CellType.Player;
-                }
-                else
-                {
-                    map[i, j] = CellType.Empty;
-                }
+                map[i, j] = CellType.Empty;
             }
         }
 
-        new_pos_enemy.Item1 = 9; new_pos_enemy.Item2 = 16;
+        player.Item1 = 5; player.Item2 = 3;
+        map[player.Item2, player.Item1] = CellType.Player;
+
+        new_pos_enemy.Item1 = 5; new_pos_enemy.Item2 = 7;
         enemies[0] = new_pos_enemy;
 
-        new_pos_enemy.Item1 = 11; new_pos_enemy.Item2 = 16;
+        new_pos_enemy.Item1 = 7; new_pos_enemy.Item2 = 7;
         enemies[1] = new_pos_enemy;
 
         foreach ( var enemy in enemies.Values)
@@ -214,8 +209,8 @@ public class MapManager : MonoBehaviour
         }
 
         // Point relative to zero
-        zero_point.Item2 = 14;
-        zero_point.Item1 = 10;
+        zero_point.Item2 = 5;
+        zero_point.Item1 = 6;
 
     }
 
