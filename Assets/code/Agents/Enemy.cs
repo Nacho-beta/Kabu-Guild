@@ -13,8 +13,8 @@ public class Enemy : MonoBehaviour
     private string name_agent;      // Name of the Agent
     private bool facing_left,       // Bool indicate if is facing to left or right
                  stop,              // Bool indicate if is in movement
-                 player_in_range,   // Bool indicate if player is in attack range
                  action_made,       // Bool indicate if action was made
+                 player_in_range,   // Bool indicate if player is in attack range
                  is_moving,
                  facing_up;         // Bool indicate if enemy come from upside
     private int max_move,       // Max of move can be made
@@ -57,13 +57,13 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void Start()
     {
-        GameObject l_go_channel;
+        GameObject l_go_channel,
+                   l_go_map;
         Vector2 new_sensor;
 
         name_agent = "Enemy";
         facing_left = true;
         stop = false;
-        player_in_range = false;
         action_made = false;
         max_move = 3;
         move_made = 0;
@@ -85,10 +85,11 @@ public class Enemy : MonoBehaviour
         l_go_channel = GameObject.FindGameObjectWithTag("Communication");
         this.channel = l_go_channel.GetComponent<CommunicationManager>();
 
+        l_go_map = GameObject.FindGameObjectWithTag("Map");
+        this.map = l_go_map.GetComponent<MapManager>();
+
         // Fill sensors vector
         new_sensor.x = this.GetRange();
-
-
     }
 
     //-------STATIC------------------------------------
@@ -103,7 +104,6 @@ public class Enemy : MonoBehaviour
         ret_enemy.name_agent = "Enemy";
         ret_enemy.facing_left = true;
         ret_enemy.stop = false;
-        ret_enemy.player_in_range = false;
         ret_enemy.max_move = 6;
         ret_enemy.move_made = 0;
 
@@ -170,9 +170,31 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void CalculateTarget()
     {
+        List<Vector2> possible_target = new List<Vector2>();
+        float   best_distance = float.MaxValue,
+                distance;
+
         if (this.channel.IsPlayerLocated())
         {
             target = this.channel.GetPlayer();
+
+            possible_target = this.FillSurroundingTarget(target);
+
+            foreach(Vector2 target_to_check in possible_target)
+            {
+                distance = (float)Mathf.Pow(target_to_check.x - position.x, 2) + (float)Mathf.Pow(target_to_check.y - position.y, 2);
+                distance = (float)Mathf.Sqrt(distance);
+                if ( distance < best_distance)
+                {
+                    best_distance = distance;
+                    target = target_to_check;
+                }
+            }
+            
+            if(this.target == this.position)
+            {
+                player_in_range = true;
+            }
         }
         else
         {
@@ -215,16 +237,80 @@ public class Enemy : MonoBehaviour
                     // If facing left = false -> Enemy come from left -> Enemy move to left
                     target.x = this.limit_left_move;
                 }
-            }
+            }            
+        }
 
-            this.FillPath();
-        }        
+        this.FillPath();
     }
 
+    /// <summary>
+    /// Search for player using map 
+    /// </summary>
+    private bool SearchPlayer()
+    {
+        bool player_found;
+
+        player_found = this.map.CheckPlayerInRange(this.GetRange(), this.id);
+        if (player_found)
+        {
+            channel.SetPlayerPos(map.GetPlayerPos());
+            player_in_range = true;
+        }
+
+        return player_found;
+    }
+
+    /// <summary>
+    /// Fill list with surrounding cells to the target
+    /// </summary>
+    /// <param name="target"></param>
+    /// <returns>List with position</returns>
+    private List<Vector2> FillSurroundingTarget(Vector2 target)
+    {
+        List<Vector2> possibles_targets = new List<Vector2>();
+        Vector2 target_aux = new Vector2();
+
+        target_aux = target;
+
+        target_aux.x = target.x - 1;
+        possibles_targets.Add(target_aux);
+
+        target_aux.x = target.x + 1;
+        possibles_targets.Add(target_aux);
+
+        target_aux = target;
+        target_aux.y = target.y - 1;
+        possibles_targets.Add(target_aux);
+
+        target_aux.y = target.y + 1;
+        possibles_targets.Add(target_aux);
+
+        return possibles_targets;
+    }
+
+    /// <summary>
+    /// Actions needed to be done after movement
+    /// </summary>
     private void PostMovementActions()
     {
+        action_actual = Actions.plan;
+
+        // Update map position
+        map.SetEnemy(this.map_position, id);
+
         // Check if player is in range
-        
+        if (this.SearchPlayer())
+        {
+            action_actual = Actions.pass_turn;
+            print("Enemigo localizado acabao mi turno");
+        }
+
+        // If movement was_completed, mark action as complete
+        if (this.move_made >= max_move - 1)
+        {
+            action_made = true;
+            action_actual = Actions.pass_turn;
+        }
     }
     //-------GETTERS-----------------------------------   
     /// <summary>
@@ -327,9 +413,14 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public bool Move()
     {
-        Vector2 ls_new_position;     
-
-        if (!is_moving)
+        Vector2 ls_new_position;  
+        
+        if(target == position)
+        {
+            action_actual = Actions.plan;
+            return false;
+        }
+        else if (!is_moving)
         {
             // Update Direction
             if(path.Count == 0)
@@ -389,29 +480,15 @@ public class Enemy : MonoBehaviour
         return stop;
     }
 
-    public void FoundEnemy(bool enemy_found, Vector2 player)
-    {        
-        if (enemy_found) 
-        {
-            player_in_range = true;
-            this.action_actual = Actions.fight;
-
-            //Update player position in channel
-            this.channel.SetPlayerPos(player,this.id);
-
-        } else
-        {
-            if (player_in_range)
-            {
-                player_in_range = false;
-                this.channel.DeletePlayerPos(this.id);
-            }
-        }
-    }
-
     public Actions PathFinding()
     {
         action_actual = Actions.move;
+
+        // If player is in range, fight
+        if (player_in_range)
+        {
+            action_actual = Actions.fight;
+        }
 
         if (this.action_made)
         {
@@ -422,8 +499,7 @@ public class Enemy : MonoBehaviour
         if(this.position == this.target)
         {
             this.CalculateTarget();
-        }
-        print("Mi objetivo es " + this.target);
+        }        
         
         return action_actual;
     }
@@ -438,9 +514,15 @@ public class Enemy : MonoBehaviour
     /// </summary>
     public void InitTurn()
     {
+        bool player_found;
+
         this.move_made = 0;
         this.action_actual = Actions.plan;
         this.action_made = false;
+        this.player_in_range = false;
+
+        // Check if player is in range
+        this.SearchPlayer();
     }
 
     /// <summary>
@@ -475,11 +557,6 @@ public class Enemy : MonoBehaviour
         else if (next_step.y > 0)
             map_position.Item1 += 1;
 
-        action_actual = Actions.plan;
-
-        if (this.move_made >= max_move - 1)
-        {
-            action_made = true;
-        }
+        this.PostMovementActions();
     }
 }

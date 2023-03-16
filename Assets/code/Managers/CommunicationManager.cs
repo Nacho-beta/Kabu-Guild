@@ -112,7 +112,7 @@ public class CommunicationManager : MonoBehaviour
     /// </summary>
     /// <param name="pos">New position of player</param>
     /// <param name="id">Enemy's Id</param>
-    public void SetPlayerPos(Vector2 pos, int id)
+    public void SetPlayerPos(Vector2 pos)
     {
         this.player_position = pos;
         this.player_pos_ok = true;
@@ -156,10 +156,9 @@ public class CommunicationManager : MonoBehaviour
     }    
 
     /// <summary>
-    /// Set 
+    /// Set player position as not found
     /// </summary>
-    /// <param name="id"></param>
-    public void DeletePlayerPos(int id)
+    public void DeletePlayerPos()
     {
         this.player_pos_ok = false;      
     }

@@ -16,7 +16,8 @@ public class MapManager : MonoBehaviour
 
     // Array var
     private (int,int) player;       // Position in map for player
-    private (int,int)[] enemies;    // Position in map for enemies
+    //private (int,int)[] enemies;    // Position in map for enemies
+    private Dictionary<int, (int,int)> enemies;    // Position in map for enemies
     private (int,int) zero_point;   // Position equivalent to 0,0
 
     // Class var
@@ -38,6 +39,8 @@ public class MapManager : MonoBehaviour
 
         l_go_floor = GameObject.FindGameObjectWithTag("Floor");
         this.co_tilemap = l_go_floor.GetComponent<Tilemap>();
+
+        enemies = new Dictionary<int, (int, int)>();
     }
 
 
@@ -119,6 +122,14 @@ public class MapManager : MonoBehaviour
 
     //-------SETTERS-----------------------------------
 
+    public void AddEnemy(int id)
+    {
+        (int, int) new_entry;
+        new_entry.Item1 = 0; new_entry.Item2 = 0;
+
+        enemies.Add(id, new_entry);
+    }
+
     /// <summary>
     /// Update player position adding the new position
     /// </summary>
@@ -138,16 +149,16 @@ public class MapManager : MonoBehaviour
     /// </summary>
     /// <param name="new_pos"> New position of enemy</param>
     /// <param name="index"> Index of enemy </param>
-    public void SetEnemy((int, int) new_pos, int index)
+    public void SetEnemy((int, int) new_pos, int id)
     {
-        (int, int) enemy_actual = enemies[index];
+        (int, int) enemy_actual = enemies[id];
         map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Empty;
 
         enemy_actual.Item2 = new_pos.Item2;
         enemy_actual.Item1 = new_pos.Item1;
 
         map[enemy_actual.Item2, enemy_actual.Item1] = CellType.Enemy;
-        enemies[index] = enemy_actual;
+        enemies[id] = enemy_actual;
     }
 
     // Get for a cell in the map
@@ -167,8 +178,7 @@ public class MapManager : MonoBehaviour
     // GenerateDesertHill : Generate map "Desert Hill"
     public void GenerateDesertHill()
     {
-        enemies = new (int,int)[2];
-
+        (int, int) new_pos_enemy;
         // Key
         key = "Kobold Hill";
 
@@ -192,10 +202,13 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        enemies[0].Item1 = 9; enemies[0].Item2 = 16;
-        enemies[1].Item1 = 11; enemies[1].Item2 = 16;
+        new_pos_enemy.Item1 = 9; new_pos_enemy.Item2 = 16;
+        enemies[0] = new_pos_enemy;
 
-        foreach ( (int,int)enemy in enemies)
+        new_pos_enemy.Item1 = 11; new_pos_enemy.Item2 = 16;
+        enemies[1] = new_pos_enemy;
+
+        foreach ( var enemy in enemies.Values)
         {
             map[enemy.Item2, enemy.Item1] = CellType.Enemy;
         }
@@ -213,16 +226,15 @@ public class MapManager : MonoBehaviour
     /// <returns>Number of enemies in the range</returns>
     public int CheckEnemiesInRange(int range)
     {
-        float lv_hypotenuse = 0.0f,
-              lv_range_pow = Mathf.Pow(range, 2);
+        float lv_hypotenuse = 0.0f;
         int lv_enemies_found = 0;
 
-        foreach((int, int) enemy_actual in enemies)
+        foreach (var enemy_actual in enemies.Values)
         {
             lv_hypotenuse = (float)Mathf.Pow(enemy_actual.Item2 - player.Item2, 2) + (float)Mathf.Pow(enemy_actual.Item1 - player.Item1, 2);
             lv_hypotenuse = (float)Mathf.Sqrt(lv_hypotenuse);
 
-            if(lv_hypotenuse <= range)
+            if (lv_hypotenuse <= range)
             {
                 lv_enemies_found++;
                 this.HighlightTile(enemy_actual.Item2, enemy_actual.Item1);
@@ -241,15 +253,14 @@ public class MapManager : MonoBehaviour
     /// <returns></returns>
     public bool CheckPlayerInRange(int range, int index)
     {
-        float lv_hypotenuse = 0.0f,
-              lv_range_pow = Mathf.Pow(range,2);
+        float lv_hypotenuse = 0.0f;
         bool lv_ret_found = false;
         (int, int) ls_enemy_actual = enemies[index];
         
         lv_hypotenuse = (float)Mathf.Pow(this.player.Item2 - ls_enemy_actual.Item2, 2) + (float)Mathf.Pow(player.Item1 - ls_enemy_actual.Item1, 2);
         lv_hypotenuse = Mathf.Sqrt(lv_hypotenuse);
 
-        if(lv_hypotenuse <= lv_range_pow)
+        if(lv_hypotenuse <= range)
         {
             lv_ret_found = true;
         }      

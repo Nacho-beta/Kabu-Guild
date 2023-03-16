@@ -108,7 +108,9 @@ public class GameManager : MonoBehaviour
         this.UpdateGameState();
     }
 
-    // UpdateGameState
+    /// <summary>
+    /// Update actual state of game
+    /// </summary>
     void UpdateGameState()
     {
         switch (actual_state)
@@ -277,7 +279,6 @@ public class GameManager : MonoBehaviour
     /// <returns> Next state of the game </returns>
     public GameState UpdateBattle()
     {
-        Enemy lc_enemy_aux = null;
         GameState ret_gm_st = GameState.update_battle;
         Vector2 player_pos;
 
@@ -303,14 +304,9 @@ public class GameManager : MonoBehaviour
                 map_manager.SetPlayer(player.GetMapPosition());
                 player_pos = map_manager.GetPlayerPos();
 
-                for (int i=0; i< enemies.Count; i++)
-                {
-                    lc_enemy_aux = enemies[i];
-                    lc_enemy_aux.FoundEnemy(
-                                    map_manager.CheckPlayerInRange(lc_enemy_aux.GetRange(), i),
-                                    player_pos
-                                );                    
-                }
+                this.communication.DeletePlayerPos();
+
+                foreach(Enemy enemy in this.enemies) { enemy.InitTurn(); }
             }
 
             // Update enemy
@@ -327,16 +323,11 @@ public class GameManager : MonoBehaviour
         if(last_state == GameState.enemy_turn) 
         {
             // Clear var
-            enemy_actual.SetAction(Actions.plan);
-            enemy_hit_happen = false;
-
-            // Update map
-            for (int i = 0; i < enemies.Count; i++)
+            foreach(Enemy enemy in this.enemies)
             {
-                lc_enemy_aux = enemies[i];
-                //map_manager.SetEnemy(lc_enemy_aux.GetMapPosition(), i);
-                map_manager.SetEnemy(lc_enemy_aux.GetPosInMap(), i);
+                enemy.InitTurn();
             }
+            enemy_hit_happen = false;            
 
             // Continue game
             ret_gm_st = GameState.player_turn;
