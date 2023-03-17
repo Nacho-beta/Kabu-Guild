@@ -14,8 +14,7 @@ public abstract class Class
                     sprites_size;   // Size of sprite array
     
     // Array var
-    protected Sprite[] sprites;
-    
+    protected Sprite[] sprites;    
 
     // Class Var
     protected GameObject go_player;

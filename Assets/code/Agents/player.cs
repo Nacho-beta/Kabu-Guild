@@ -125,7 +125,6 @@ public class Player : MonoBehaviour
         this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
 
         this.hitbox = gameObject.GetComponent<BoxCollider2D>();
-        this.hitbox.size = new Vector2(0.45f, 0.45f);
 
         // Methods called in the start
         this.CleanInput();

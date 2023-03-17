@@ -42,6 +42,7 @@ public class Enemy : MonoBehaviour
     private Actions action_actual;          // Actual action
     private CommunicationManager channel;   // Agent's Channel
     private MapManager map;                 // Map of the Game
+    private SpriteRenderer sprite_renderer; // Sprite Renderer
 
     // Static var
     static int id_generator = 0;    // Id generator
@@ -62,7 +63,7 @@ public class Enemy : MonoBehaviour
         Vector2 new_sensor;
 
         name_agent = "Enemy";
-        facing_left = true;
+        facing_left = false;
         stop = false;
         action_made = false;
         max_move = 3;
@@ -88,8 +89,13 @@ public class Enemy : MonoBehaviour
         l_go_map = GameObject.FindGameObjectWithTag("Map");
         this.map = l_go_map.GetComponent<MapManager>();
 
+        this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
         // Fill sensors vector
         new_sensor.x = this.GetRange();
+
+        // Fill sprite
+        this.ChangeSprite();
     }
 
     //-------STATIC------------------------------------
@@ -380,6 +386,12 @@ public class Enemy : MonoBehaviour
         }
 
         return ret;
+    }
+
+    private void ChangeSprite()
+    {
+        sprite_renderer.sprite = agent_type.GetSprite();
+        sprite_renderer.size = new Vector2(1, 1);
     }
 
     //-------------------------------------------------   
