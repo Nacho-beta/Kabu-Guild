@@ -12,24 +12,22 @@ public class MapManager : MonoBehaviour
     // Standard Var
     private int width, 
                 height;
-    private string key; // Key needed for communication
+    private string key;             // Key needed for communication
+    private (int, int) zero_point,  // Position equivalent to 0,0
+                       player;
 
-    // Array var
-    private (int,int) player;       // Position in map for player
-    //private (int,int)[] enemies;    // Position in map for enemies
-    private Dictionary<int, (int,int)> enemies;    // Position in map for enemies
-    private (int,int) zero_point;   // Position equivalent to 0,0
+    // Array var   
+    private Dictionary<int, (int,int)> enemies; // Position in map for enemies
+    private List<Vector3Int> tiles_changed;     // List with highlighted tiles  
 
     // Class var
     private CellType[,] map;   // Matrix with map info
     private Tilemap co_tilemap;  // Tile map of the scene
-    //private Tile 
 
-    // --------------------------------------------------
-    // Methods
-    // --------------------------------------------------
 
+    //-------------------------------------------------
     //-------UNITY-------------------------------------
+    //-------------------------------------------------
     /// <summary>
     /// Execution of start in the first frame
     /// </summary>
@@ -41,10 +39,13 @@ public class MapManager : MonoBehaviour
         this.co_tilemap = l_go_floor.GetComponent<Tilemap>();
 
         enemies = new Dictionary<int, (int, int)>();
+        tiles_changed = new List<Vector3Int>();
     }
 
 
+    //-------------------------------------------------
     //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
     /// <summary>
     /// Remark a Tile when it is needed
     /// </summary>
@@ -58,8 +59,26 @@ public class MapManager : MonoBehaviour
         grid_position.x = x - zero_point.Item2;
         grid_position.y = y - zero_point.Item1;
 
+        // Change color
         co_tilemap.SetTileFlags(grid_position, TileFlags.None);
         co_tilemap.SetColor(grid_position, Color.red);
+
+        // Save as modified
+        tiles_changed.Add(grid_position);
+    }
+
+    /// <summary>
+    /// Parse scene position to map position
+    /// </summary>
+    /// <param name="pos"> Position in scene </param>
+    /// <returns> Position in map </returns>
+    private (int,int) ParsePosToMap(Vector2 pos_scene)
+    {
+        (int, int) map_pos;
+        map_pos.Item2 = (int)Mathf.RoundToInt(pos_scene.x + this.zero_point.Item2 - 0.5f );
+        map_pos.Item1 = (int)Mathf.RoundToInt(pos_scene.y + this.zero_point.Item1 - 0.75f);
+
+        return map_pos;
     }
 
     //-------GETTERS-----------------------------------
@@ -89,6 +108,26 @@ public class MapManager : MonoBehaviour
     /// <param name="index"> Index of enemy</param>
     /// <returns> Enemy's map position </returns>
     public (int, int) GetEnemyMapPos(int index) { return enemies[index]; }
+
+    /// <summary>
+    /// Get the enemy index in that position, if not enemy in this position return -1
+    /// </summary>
+    /// <param name="pos_enemy"> Pos to check</param>
+    /// <returns> Index of the enemy, -1 if error</returns>
+    public int GetEnemyIndexByPos(Vector2 pos_enemy)
+    {
+        (int,int) enemy_map_pos = this.ParsePosToMap(pos_enemy);
+
+        foreach(var enemy_actual in enemies)
+        {
+            if(enemy_actual.Value == enemy_map_pos)
+            {
+                return enemy_actual.Key;
+            }
+        }
+
+        return -1;
+    }
 
     /// <summary>
     /// Get player scene position
@@ -161,6 +200,10 @@ public class MapManager : MonoBehaviour
         enemies[id] = enemy_actual;
     }
 
+
+    //-------------------------------------------------
+    //-------PUBLIC------------------------------------
+    //-------------------------------------------------
     // Get for a cell in the map
     public CellType GetMapCell(int i, int j)
     {
@@ -262,6 +305,18 @@ public class MapManager : MonoBehaviour
 
         return lv_ret_found;
     }    
+    
+    /// <summary>
+    /// Restart cells and restart their colors
+    /// </summary>
+    public void RestartCells()
+    {
+        foreach(Vector3Int cell in this.tiles_changed)
+        {
+            co_tilemap.SetTileFlags(cell, TileFlags.None);
+            co_tilemap.SetColor(cell, Color.white);
+        }
+    }
 }
 
 public enum CellType

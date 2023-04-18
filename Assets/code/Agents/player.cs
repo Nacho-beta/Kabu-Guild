@@ -10,17 +10,19 @@ public class Player : MonoBehaviour
      * ------------------------------------------------------
      */
     // Standard var
-    private int max_move,       // Max of move can be made
-                move_made;      // Actual move that have been made
-    private float input_x,      // Input in horizontal axis
-                  input_y,      // Input in vertical axis
-                  hp;           // Hit points for the player
+    private int max_move,           // Max of move can be made
+                move_made,          // Actual move that have been made
+                input_enemy_index;  // Enemy index for attack
+    private float input_x,  // Input in horizontal axis
+                  input_y,  // Input in vertical axis
+                  hp;       // Hit points for the player
     private string name_agent;  // Name of the Agent
-    private bool pos_ok ,       // Bool indicate if current position and value of position it's ok
-                 facing_left;   // Bool that indicate if is facing to left or right
+    private bool pos_ok,        // Bool indicate if current position and value of position it's ok
+                 facing_left,   // Bool that indicate if is facing to left or right
+                 input_mouse_ok;// Bool represents if is reading input for mouse
 
     // Array Var
-    public Vector2 position;    // Vector2 (x,y) for position of agent
+    public Vector2 position;        // Vector2 (x,y) for position of agent
     private (int,int) map_move;
 
     // Class Var
@@ -29,6 +31,7 @@ public class Player : MonoBehaviour
     private Actions action_actual;          // Action to return to GM
     private SpriteRenderer sprite_renderer; // Sprite Renderer
     private BoxCollider2D hitbox;           // Hit box
+    private MapManager map;                 // Map of the Game
 
 
     /*
@@ -37,13 +40,62 @@ public class Player : MonoBehaviour
      * ------------------------------------------------------
      */
 
-    //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
+    //-------UNITY-------------------------------------
+    //-------------------------------------------------
+    /// <summary>
+    /// Start is called before the firs frame update
+    /// </summary>
+    public void Start()
+    {
+        GameObject l_go_map;
 
-    // CleanInput : Clean var for input in movement
+        // Standard var
+        hp = 10.0f;
+        max_move = 6;
+        move_made = 0;
+        name_agent = "Player";
+        pos_ok = false;
+        facing_left = false;
+        input_mouse_ok = false;
+
+        // Array Var
+        position = new Vector2(-0.5f, -0.25f);
+
+        // Initialization class var
+        my_class = new Warrior();
+
+        action_actual = Actions.none;
+
+        // Get references
+        move = gameObject.AddComponent(typeof(Movement)) as Movement;
+
+        this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
+
+        this.hitbox = gameObject.GetComponent<BoxCollider2D>();
+
+        l_go_map = GameObject.FindGameObjectWithTag("Map");
+        this.map = l_go_map.GetComponent<MapManager>();
+
+        // Methods called in the start
+        this.CleanInput();
+        this.ChangeSprite();
+    }
+
+    //-------------------------------------------------
+    //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
+
+    /// <summary>
+    /// Clean variables needed for input in movement
+    /// </summary>
     private void CleanInput()
     {
         input_x = 0.0f;
         input_y = 0.0f;
+
+        input_mouse_ok = false;
+        input_enemy_index = -1;
     }
 
     /// <summary>
@@ -54,8 +106,15 @@ public class Player : MonoBehaviour
         sprite_renderer.sprite = my_class.GetSprite();
     }
 
-    //-------GETTERS-----------------------------------    
-    // Action Actual
+   
+    //-------------------------------------------------
+    //-------GETTERS-----------------------------------
+    //-------------------------------------------------
+    
+    /// <summary>
+    /// Get actual action
+    /// </summary>
+    /// <returns></returns>
     public Actions GetAction()
     {
         if (action_actual == Actions.move)
@@ -84,6 +143,7 @@ public class Player : MonoBehaviour
         return map_position;
     }
 
+    public Attack GetAttack() { return my_class.Attack(); }
 
     //-------SETTERS-----------------------------------   
     // Action actual
@@ -100,36 +160,7 @@ public class Player : MonoBehaviour
 
 
     //-------PUBLIC------------------------------------ 
-    // Start : Start is called before the first frame update
-    public void Start()
-    {
-        // Standard var
-        hp = 10.0f;
-        max_move = 6;
-        move_made = 0;              
-        name_agent = "Player";
-        pos_ok = false;
-        facing_left = false;
-
-        // Array Var
-        position = new Vector2(-0.5f, -0.25f);
-                    
-        // Initialization class var
-        my_class = new Warrior();
-
-        action_actual = Actions.none;
-
-        // Get references
-        move = gameObject.AddComponent(typeof(Movement)) as Movement;
-
-        this.sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
-
-        this.hitbox = gameObject.GetComponent<BoxCollider2D>();
-
-        // Methods called in the start
-        this.CleanInput();
-        this.ChangeSprite();
-    }
+    
     
     // Move: Move agent using control
     public bool Move()
@@ -139,7 +170,6 @@ public class Player : MonoBehaviour
         bool move_happen = false;
 
         // Get Input
-
         StartCoroutine("WaitForMovementInput");
 
         if(input_x < 0)
@@ -207,10 +237,49 @@ public class Player : MonoBehaviour
     /// <summary>
     /// Select attack and calculate damage
     /// </summary>
-    /// <returns>Attack of the class</returns>
-    public Attack Attack()
+    /// <returns>Index of enemy to hit</returns>
+    public int Attack()
     {
-        return my_class.Attack();
+        int lv_enemies_range = 0;
+
+        // If input of mouse is null
+        if (!input_mouse_ok)
+        {
+            // Calculate enemies in the range
+            lv_enemies_range = this.map.CheckEnemiesInRange(this.GetRange());
+            if(lv_enemies_range > 0)
+            {
+                // Wait for user select a valid enemy
+                StartCoroutine("WaitForClickInput");
+            }
+            else
+            {
+                // If there isn't enemies in range, end turn
+                this.action_actual = Actions.pass_turn;
+            }            
+        }
+        else
+        {
+            // If input is correct
+            if (input_enemy_index >= 0)
+            {                
+                // End turn
+                this.action_actual = Actions.pass_turn;
+                return input_enemy_index;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Clear var for player
+    /// </summary>
+    public void Clear()
+    {
+        this.CleanInput();
+
+        this.action_actual = Actions.none;        
     }
 
 
@@ -228,6 +297,29 @@ public class Player : MonoBehaviour
             yield return null;
         }
         
+    }
+
+    IEnumerator WaitForClickInput()
+    {
+        Vector2 pos_map = new Vector2();
+        Vector3 input_mouse = new Vector3();
+
+        while (this.input_enemy_index < 0)
+        {
+            if(Input.GetMouseButtonDown(0))
+            {
+                input_mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                
+                pos_map.x = input_mouse.x;
+                pos_map.y = input_mouse.y;
+
+                this.input_enemy_index = this.map.GetEnemyIndexByPos(pos_map);
+            }            
+            
+            yield return null;
+        }
+        input_mouse_ok = true;
+        print("Pos del raton: " + input_mouse);
     }
 
     // UpdatePosition: Call get method for movement to update the position
