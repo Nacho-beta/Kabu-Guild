@@ -10,14 +10,18 @@ public class GameManager : MonoBehaviour
 
     // Private
     //  Standard Var
-    private int enemy_index;        // Index to get enemy for array
-    private bool player_move_happen,// Bool indicate if player move happen
-                 enemy_move_happen, // Bool indicate if enemy move happen
-                 enemy_hit_happen;  // Bool indicate if enemy attack
+    private int enemy_index;            // Index to get enemy for array
+    private bool player_move_happen,    // Bool indicate if player move happen
+                 player_hit_happen,     // Bool indicate if player made action Attack
+                 player_doing_action,   // Bool indicate if player is doing an action
+                 enemy_move_happen,     // Bool indicate if enemy move happen
+                 enemy_hit_happen;      // Bool indicate if enemy attack
+    
     // Array Var
     private List<Enemy> enemies;    // Array(List) of Enemies
+    
     // Class Type Var
-    public static GameManager instance;// Instance needed for GameManager
+    public static GameManager instance; // Instance needed for GameManager
     private GameState actual_state,     // Actual state of the game
                       last_state;       // Last state of the game
     private Player player;              // Player of game
@@ -34,7 +38,9 @@ public class GameManager : MonoBehaviour
     // --------------------------------------------------
     public string GetChannelKey() { return map_manager.GetKey(); }
 
+    //-------------------------------------------------
     //-------PRIVATE-----------------------------------
+    //-------------------------------------------------
     /// <summary>
     /// Update actual enemy for the turn
     /// </summary>
@@ -186,13 +192,16 @@ public class GameManager : MonoBehaviour
 
         return GameState.player_turn;
     }
-
-    // PlayerTurn: Action in player's turn
+    
+    /// <summary>
+    /// Actions in player's turn
+    /// </summary>
+    /// <returns> Next state of the game</returns>
     GameState PlayerTurn()
     {
         // Var
         bool kill_enemy = false;
-        int enemies_hit = 0;
+        int enemy_to_hit = -1;
         GameState state_to_return = GameState.player_turn;
         Actions player_action = Actions.none; // Action for player
 
@@ -209,26 +218,35 @@ public class GameManager : MonoBehaviour
                 player.Move();
                 player_move_happen = true;
                 break;
+
             case Actions.fight:
                 this.action_menu.SetStatusMenu(false);
 
-                enemies_hit = map_manager.CheckEnemiesInRange(player.GetRange());
-                if(enemies_hit> 0)
+                enemy_to_hit = player.Attack();
+
+                if (enemy_to_hit >= 0)
                 {
-                    kill_enemy = this.enemy_actual.ReceiveAttack(player.Attack());
-                    if(kill_enemy) { print("Enemigo derrotado"); }
+                    for(int i=0; i<enemies.Count; i++)
+                    {
+                        if( enemies[i].GetId() == enemy_to_hit)
+                        {
+                            enemies[i].ReceiveAttack(player.GetAttack());
+                        }
+                    }
+                    this.map_manager.RestartCells();
                 }
-                this.player.SetAction(Actions.pass_turn);
                 break;
+
             case Actions.Skill:
                 this.action_menu.SetStatusMenu(false);
                 this.player.Skill();
                 break;
+
             case Actions.pass_turn:
                 state_to_return = GameState.update_battle;
-                break;            
-            default:
-                this.action_menu.SetStatusMenu(true);
+                break;
+                
+            default:                
                 break;
         }
 
@@ -286,7 +304,7 @@ public class GameManager : MonoBehaviour
         if (last_state == GameState.player_turn)
         {
             // Update player var
-            player.SetAction(Actions.none);
+            player.Clear();        
 
             // Clear enemies
             enemy_index = 0;
@@ -315,6 +333,16 @@ public class GameManager : MonoBehaviour
 
             // Continue game
             ret_gm_st = GameState.enemy_turn;
+
+            // Update map
+            if (player_hit_happen)
+            {
+                this.map_manager.RestartCells();
+            }
+
+            // Clear var
+            player_hit_happen = false;
+            player_doing_action = false;
 
             StartCoroutine("WaitSeconds");
         }
