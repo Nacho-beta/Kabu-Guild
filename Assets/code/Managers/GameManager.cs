@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -137,6 +138,7 @@ public class GameManager : MonoBehaviour
                 actual_state = this.EnemiesTurn();
                 break;
             case GameState.end_fight:
+                this.FinishBattle();
                 break;
             default:
                 print("Valor por defecto de actualizar estado");
@@ -258,14 +260,15 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <returns></returns>
     GameState EnemiesTurn()
-    {        
-        // Var       
+    {
+        // Var
+        bool player_dead = false;
         GameState state_to_return = GameState.enemy_turn;
         Actions enemy_action; // Action for enemy
 
         last_state = GameState.enemy_turn;      
-
         enemy_action = enemy_actual.GetAction();
+
         //print("Loop en " + enemy_action);
         switch (enemy_action)
         {
@@ -278,10 +281,17 @@ public class GameManager : MonoBehaviour
                 enemy_actual.Move();
                 break;
             case Actions.fight:
-                print("Id = "+enemy_actual.GetId()+"Ataco");
                 enemy_hit_happen = true;
                 enemy_actual.SetAction(Actions.pass_turn);
-                enemy_actual.Attack();
+                
+                player_dead = player.ReceiveAttack(enemy_actual.Attack());
+                print("Vida del jugador = " + player.GetHP());
+
+                if (player_dead)
+                {
+                    state_to_return = GameState.end_fight;
+                }
+
                 break;
             case Actions.pass_turn:                
                 state_to_return = this.UpdateEnemyActual();                
@@ -362,7 +372,22 @@ public class GameManager : MonoBehaviour
         }
 
         last_state = GameState.update_battle;
+
+        if(player.GetHP() <= 0 | enemies.Count <= 0)
+        {
+            last_state = GameState.end_fight;
+        }
         return ret_gm_st;
+    }
+
+    /// <summary>
+    /// Finish battle and return to lobby
+    /// </summary>
+    public void FinishBattle()
+    {
+        this.actual_state= GameState.game_start;
+
+        SceneManager.LoadScene("Nexo");
     }
 
     IEnumerator WaitSeconds()

@@ -303,8 +303,7 @@ public class Enemy : MonoBehaviour
         // Check if player is in range
         if (this.SearchPlayer())
         {
-            action_actual = Actions.pass_turn;
-            print("Enemigo localizado acabao mi turno");
+            action_actual = Actions.pass_turn;            
         }
 
         // If movement was_completed, mark action as complete
@@ -451,8 +450,6 @@ public class Enemy : MonoBehaviour
         position= new_pos;
         target = position;
         this.transform.position = position;
-
-        print("Posicion en el mapa " + this.map_position);
     }
 
     /// <summary>
@@ -465,7 +462,7 @@ public class Enemy : MonoBehaviour
     /// Set new position for target
     /// </summary>
     /// <param name="new_target">New position to be the target</param>
-    public void SetTarget(Vector2 new_target) { print("Mi nuevo objetivo es " + new_target); this.target= new_target; }
+    public void SetTarget(Vector2 new_target) { this.target= new_target; }
 
     /// <summary>
     /// Set for limit move up
@@ -565,10 +562,8 @@ public class Enemy : MonoBehaviour
     /// <param name="atck"> Attack to receive</param>
     /// <returns> Bool indicate if the agent is dead </returns>
     public bool ReceiveAttack(Attack atck)
-    {
-        print("Vida actual = " + agent_type.GetHp());
-        stop = agent_type.ReceiveAttack(atck);
-        print("Vida despues del ataque = " + agent_type.GetHp());
+    {        
+        stop = agent_type.ReceiveAttack(atck);        
         return stop;
     }
 
@@ -596,9 +591,10 @@ public class Enemy : MonoBehaviour
         return action_actual;
     }
 
-    public void Attack()
+    public Attack Attack()
     {
         this.action_made = true;
+        return this.agent_type.DealAttack();
     }
 
     /// <summary>

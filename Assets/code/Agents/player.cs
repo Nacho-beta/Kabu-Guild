@@ -282,6 +282,15 @@ public class Player : MonoBehaviour
         this.action_actual = Actions.none;        
     }
 
+    /// <summary>
+    /// Receive the attack
+    /// </summary>
+    /// <param name="atck"> Attack to receive </param>
+    public bool ReceiveAttack(Attack atck)
+    {
+        this.hp -= atck.GetDamage();
+        return (this.hp <= 0);
+    }
 
     /*
      * Coroutines

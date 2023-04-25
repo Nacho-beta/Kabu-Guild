@@ -62,4 +62,5 @@ public abstract class Class
     /// </summary>
     /// <returns> Attack of the class</returns>
     abstract public Attack Attack();
+
 }
