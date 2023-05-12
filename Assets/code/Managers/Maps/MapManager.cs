@@ -240,11 +240,17 @@ public class MapManager : MonoBehaviour
         player.Item1 = 5; player.Item2 = 3;
         map[player.Item2, player.Item1] = CellType.Player;
 
-        new_pos_enemy.Item1 = 5; new_pos_enemy.Item2 = 7;
+        new_pos_enemy.Item1 = 1; new_pos_enemy.Item2 = 8;
         enemies[0] = new_pos_enemy;
 
-        new_pos_enemy.Item1 = 7; new_pos_enemy.Item2 = 7;
+        new_pos_enemy.Item1 = 3; new_pos_enemy.Item2 = 4;
         enemies[1] = new_pos_enemy;
+
+        new_pos_enemy.Item1 = 8; new_pos_enemy.Item2 = 9;
+        enemies[2] = new_pos_enemy;
+
+        new_pos_enemy.Item1 = 10; new_pos_enemy.Item2 = 2;
+        enemies[3] = new_pos_enemy;
 
         foreach ( var enemy in enemies.Values)
         {

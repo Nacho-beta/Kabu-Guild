@@ -138,7 +138,7 @@ public class GameManager : MonoBehaviour
                 actual_state = this.EnemiesTurn();
                 break;
             case GameState.end_fight:
-                this.FinishBattle();
+                actual_state = this.FinishBattle();
                 break;
             default:
                 print("Valor por defecto de actualizar estado");
@@ -383,11 +383,17 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Finish battle and return to lobby
     /// </summary>
-    public void FinishBattle()
+    public GameState FinishBattle()
     {
-        this.actual_state= GameState.game_start;
+        GameState ret_state = GameState.end_fight;
 
-        SceneManager.LoadScene("Nexo");
+        if (player.GetAnimationEnd())
+        {
+            ret_state = GameState.game_start;
+            SceneManager.LoadScene("Nexo");            
+        }
+
+        return ret_state;
     }
 
     IEnumerator WaitSeconds()

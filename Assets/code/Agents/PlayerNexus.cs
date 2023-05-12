@@ -38,8 +38,6 @@ public class PlayerNexus : MonoBehaviour
     /// </summary>
     void Start()
     {
-        GameObject l_go_map;
-
         // Standard var
         name_agent = "Player";
         facing_left = false;

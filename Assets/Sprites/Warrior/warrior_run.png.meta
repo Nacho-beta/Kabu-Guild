@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a60e9b12746afdc4db21b2fbcf02db5f
+guid: 2a19561ee6980fa4bb135e70a5a86e3b
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -129,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: warrior_0
+      name: warrior_run_0
       rect:
         serializedVersion: 2
-        x: 37
+        x: 29
         y: 0
-        width: 69
-        height: 71
+        width: 63
+        height: 79
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,20 +143,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 24d5af5f7936f0243b50677761be17f7
-      internalID: -1977627516
+      spriteID: 7579f281cd94c3f41b74961324901cdc
+      internalID: 1653353712
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: warrior_1
+      name: warrior_run_1
       rect:
         serializedVersion: 2
-        x: 181
+        x: 148
         y: 0
-        width: 69
-        height: 71
+        width: 65
+        height: 79
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -164,20 +164,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cf913ebd79fdfe54fbb1a581786ff50c
-      internalID: -92042073
+      spriteID: f007914506e7cfa4b8498595fc48cad6
+      internalID: -1582597229
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: warrior_2
+      name: warrior_run_2
       rect:
         serializedVersion: 2
-        x: 325
+        x: 269
         y: 0
-        width: 69
-        height: 71
+        width: 63
+        height: 80
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -185,20 +185,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 66d6c3264a2714e4f9bc6700a9c24555
-      internalID: -995638301
+      spriteID: 7197fce893189be4b878d97ccdcc4deb
+      internalID: -1331404751
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: warrior_3
+      name: warrior_run_3
       rect:
         serializedVersion: 2
-        x: 469
+        x: 391
         y: 0
-        width: 69
-        height: 73
+        width: 61
+        height: 80
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -206,20 +206,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4e66f2e8ff548a34093b093877a4014e
-      internalID: -1069399420
+      spriteID: b3410c695d12c78489da71d5abef1a46
+      internalID: 146270024
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: warrior_4
+      name: warrior_run_4
       rect:
         serializedVersion: 2
-        x: 613
+        x: 512
         y: 0
-        width: 69
-        height: 73
+        width: 61
+        height: 79
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -227,8 +227,29 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 41a88439505cdf9408eea548b6cb0b53
-      internalID: -2116522174
+      spriteID: f1bd8f7e15800e1438712ffa1e65a13c
+      internalID: -847562652
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: warrior_run_5
+      rect:
+        serializedVersion: 2
+        x: 631
+        y: 0
+        width: 61
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c209bb437224898489ce6bf9c2905e3a
+      internalID: 386782263
       vertices: []
       indices: 
       edges: []
@@ -244,11 +265,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      warrior_3: -1069399420
-      warrior_0: -1977627516
-      warrior_4: -2116522174
-      warrior_2: -995638301
-      warrior_1: -92042073
+      warrior_run_2: -1331404751
+      warrior_run_3: 146270024
+      warrior_run_1: -1582597229
+      warrior_run_5: 386782263
+      warrior_run_0: 1653353712
+      warrior_run_4: -847562652
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
