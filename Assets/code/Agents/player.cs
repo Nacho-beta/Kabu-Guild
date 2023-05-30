@@ -350,7 +350,6 @@ public class Player : MonoBehaviour
             yield return null;
         }
         input_mouse_ok = true;
-        print("Pos del raton: " + input_mouse);
     }
 
     // UpdatePosition: Call get method for movement to update the position

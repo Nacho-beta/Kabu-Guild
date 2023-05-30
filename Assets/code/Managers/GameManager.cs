@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance; // Instance needed for GameManager
     private GameState actual_state,     // Actual state of the game
                       last_state;       // Last state of the game
+    private EndGame result; 
     private Player player;              // Player of game
     private Enemy enemy_actual;         // Enemy of actual turn
     private ActionMenu action_menu;     // Menu for actions in combat of the player
@@ -59,6 +60,26 @@ public class GameManager : MonoBehaviour
 
         enemy_actual = enemies[enemy_index];
         return ret_next_state;
+    }
+
+    /// <summary>
+    /// Remove the enemy from all managers
+    /// </summary>
+    /// <param name="pos"> Position of the enemy in the array</param>
+    private void RemoveEnemy(int pos)
+    {
+        Enemy lc_enemy_to_delete = enemies[pos];
+
+        // Deactivate enemy
+        lc_enemy_to_delete.KillEnemy();
+
+        // Remove from map manager
+        map_manager.RemoveEnemy(lc_enemy_to_delete.GetId());
+
+        // Remove enemy from communication channel
+        this.communication.Unsubscribe(lc_enemy_to_delete.GetId());
+
+        enemies.RemoveAt(pos);
     }
 
     // Awake
@@ -232,7 +253,11 @@ public class GameManager : MonoBehaviour
                     {
                         if( enemies[i].GetId() == enemy_to_hit)
                         {
-                            enemies[i].ReceiveAttack(player.GetAttack());
+                            kill_enemy = enemies[i].ReceiveAttack(player.GetAttack());
+                            if (kill_enemy)
+                            {
+                                this.RemoveEnemy(i);
+                            }
                         }
                     }
                     this.map_manager.RestartCells();
@@ -310,73 +335,83 @@ public class GameManager : MonoBehaviour
         GameState ret_gm_st = GameState.update_battle;
         Vector2 player_pos;
 
-        // Update game after player turn
-        if (last_state == GameState.player_turn)
+        // Check end of game
+        if(player.GetHP() <= 0) 
         {
-            // Update player var
-            player.Clear();        
-
-            // Clear enemies
-            enemy_index = 0;
-            foreach(Enemy enemy_to_update in enemies)
+            ret_gm_st = GameState.end_fight;
+            this.result = EndGame.defeat;
+        }
+        else if (enemies.Count <= 0)
+        {
+            ret_gm_st = GameState.end_fight;
+            this.result = EndGame.victory;
+        }
+        else
+        {
+            // Update game after player turn
+            if (last_state == GameState.player_turn)
             {
-                enemy_to_update.InitTurn();
-            }            
+                // Update player var
+                player.Clear();
+
+                // Clear enemies
+                enemy_index = 0;
+                foreach (Enemy enemy_to_update in enemies)
+                {
+                    enemy_to_update.InitTurn();
+                }
 
 
-            // Check if player move
-            if (player_move_happen)
-            {
-                player_move_happen = false;
+                // Check if player move
+                if (player_move_happen)
+                {
+                    player_move_happen = false;
 
-                map_manager.SetPlayer(player.GetMapPosition());
-                player_pos = map_manager.GetPlayerPos();
+                    map_manager.SetPlayer(player.GetMapPosition());
+                    player_pos = map_manager.GetPlayerPos();
 
-                this.communication.DeletePlayerPos();
+                    this.communication.DeletePlayerPos();
 
-                foreach(Enemy enemy in this.enemies) { enemy.InitTurn(); }
+                    foreach (Enemy enemy in this.enemies) { enemy.InitTurn(); }
+                }
+
+                // Update enemy
+                enemy_index = 0;
+                enemy_actual = enemies[0];
+
+                // Continue game
+                ret_gm_st = GameState.enemy_turn;
+
+                // Update map
+                if (player_hit_happen)
+                {
+                    this.map_manager.RestartCells();
+                }
+
+                // Clear var
+                player_hit_happen = false;
+                player_doing_action = false;
+
+                StartCoroutine("WaitSeconds");
             }
 
-            // Update enemy
-            enemy_index = 0;
-            enemy_actual = enemies[0];
-
-            // Continue game
-            ret_gm_st = GameState.enemy_turn;
-
-            // Update map
-            if (player_hit_happen)
+            // Update game after enemies turn
+            if (last_state == GameState.enemy_turn)
             {
-                this.map_manager.RestartCells();
+                // Clear var
+                foreach (Enemy enemy in this.enemies)
+                {
+                    enemy.InitTurn();
+                }
+                enemy_hit_happen = false;
+
+                // Continue game
+                ret_gm_st = GameState.player_turn;
             }
 
-            // Clear var
-            player_hit_happen = false;
-            player_doing_action = false;
-
-            StartCoroutine("WaitSeconds");
+            last_state = GameState.update_battle;
         }
-
-        // Update game after enemies turn
-        if(last_state == GameState.enemy_turn) 
-        {
-            // Clear var
-            foreach(Enemy enemy in this.enemies)
-            {
-                enemy.InitTurn();
-            }
-            enemy_hit_happen = false;            
-
-            // Continue game
-            ret_gm_st = GameState.player_turn;
-        }
-
-        last_state = GameState.update_battle;
-
-        if(player.GetHP() <= 0 | enemies.Count <= 0)
-        {
-            last_state = GameState.end_fight;
-        }
+               
         return ret_gm_st;
     }
 
@@ -387,12 +422,19 @@ public class GameManager : MonoBehaviour
     {
         GameState ret_state = GameState.end_fight;
 
-        if (player.GetAnimationEnd())
+        if(this.result == EndGame.defeat)
         {
-            ret_state = GameState.game_start;
-            SceneManager.LoadScene("Nexo");            
+            if (player.GetAnimationEnd())
+            {
+                ret_state = GameState.game_start;
+                SceneManager.LoadScene("Nexo");
+            }
         }
-
+        else
+        {
+            SceneManager.LoadScene("Nexo");
+        }
+       
         return ret_state;
     }
 
@@ -404,7 +446,7 @@ public class GameManager : MonoBehaviour
     }
 }
 
-// State fo the game
+// State needed by the game
 public enum GameState
 {
     game_start,
@@ -412,4 +454,12 @@ public enum GameState
     player_turn,
     enemy_turn,
     end_fight
+}
+
+// States needed by end of game
+public enum EndGame
+{
+    victory,
+    defeat,
+    draw
 }

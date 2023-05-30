@@ -323,6 +323,15 @@ public class MapManager : MonoBehaviour
             co_tilemap.SetColor(cell, Color.white);
         }
     }
+
+    /// <summary>
+    /// Remove enemy from enemy list
+    /// </summary>
+    /// <param name="id"></param>
+    public void RemoveEnemy(int id)
+    {
+        enemies.Remove(id);
+    }
 }
 
 public enum CellType

@@ -563,7 +563,7 @@ public class Enemy : MonoBehaviour
     /// <returns> Bool indicate if the agent is dead </returns>
     public bool ReceiveAttack(Attack atck)
     {        
-        stop = agent_type.ReceiveAttack(atck);        
+        stop = agent_type.ReceiveAttack(atck);
         return stop;
     }
 
@@ -611,6 +611,14 @@ public class Enemy : MonoBehaviour
 
         // Check if player is in range
         this.SearchPlayer();
+    }
+
+    /// <summary>
+    /// Deactivate the enemy
+    /// </summary>
+    public void KillEnemy()
+    {
+        gameObject.SetActive(false);
     }
 
     /// <summary>
