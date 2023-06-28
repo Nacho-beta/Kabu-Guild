@@ -10,19 +10,19 @@ public class PlayerNexus : MonoBehaviour
      * ------------------------------------------------------
      */
     //Standard var
-    private float input_x,  // Input in horizontal axis
-                  input_y;  // Input in vertical axis
     private bool facing_left,   // Bool that indicate if is facing to left or right
                  pos_ok;        // Bool indicate if current position and value of position it's ok
     private string name_agent;  // Name of the Agent
+    private float speed;        // Speed of movement
 
     // Array Var
-    private Vector2 position;   // Vector2 (x,y) for position of agent                             
+    private Vector2 movement_direction;   // Vector2 (x,y) for position of agent                             
     // Class var
     private Movement move;
     private Class my_class;
     private SpriteRenderer sprite_renderer; // Sprite Renderer
     private BoxCollider2D hitbox;           // Hit box
+    private Rigidbody2D rb; 
 
     /*
      * ------------------------------------------------------
@@ -41,9 +41,10 @@ public class PlayerNexus : MonoBehaviour
         // Standard var
         name_agent = "Player";
         facing_left = false;
+        speed = 2f;
 
         // Array Var
-        position = new Vector2(0.5f, 0.75f);
+        movement_direction = new Vector2(0.0f, 0.0f);
 
         // Initialization class var
         my_class = new Warrior();
@@ -55,8 +56,9 @@ public class PlayerNexus : MonoBehaviour
 
         this.hitbox = gameObject.GetComponent<BoxCollider2D>();
 
+        this.rb = gameObject.GetComponent<Rigidbody2D>();
+
         // Methods called in the start
-        this.CleanInput();
         this.ChangeSprite();
         
     }
@@ -64,65 +66,37 @@ public class PlayerNexus : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        this.Move();        
+        Vector3 target = new Vector3();
+
+        movement_direction = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        if(movement_direction.x != 0)
+        {
+            // Flip sprite if needed
+            if(this.move.facing(ref facing_left, movement_direction.x))
+            {
+                transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+            }
+        }
+
+        if(movement_direction.x != 0 | movement_direction.y !=0)
+        {
+            target.x = this.transform.position.x + movement_direction.x*speed;
+            target.y = this.transform.position.y + movement_direction.y*speed;
+            target.z = this.transform.position.z;
+
+            this.transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        
+        rb.velocity = movement_direction;
     }
 
     //-------------------------------------------------
     //-------PRIVATE-----------------------------------
     //-------------------------------------------------
-    private bool Move()
-    {
-        Vector2 old_pos = new Vector2(position.x, position.y),
-                target = new Vector2(0, 0);
-        bool move_happen = false;
-
-        // Get Input
-        StartCoroutine("WaitForMovementInput");
-
-        if (input_x < 0)
-        {
-            target.x = -1;
-        }
-        else if (input_x > 0)
-        {
-            target.x = 1;
-        }
-
-        if (input_y < 0)
-        {
-            target.y = -1;
-        }
-        else if (input_y > 0)
-        {
-            target.y = 1;
-        }
-
-        // Movement
-        if (target != Vector2.zero)
-        {
-            this.CleanInput();
-
-            move_happen = this.move.Move(ref position, target, ref facing_left, name_agent);
-            if (move_happen)
-            {
-                pos_ok = false;
-                StartCoroutine("UpdatePosition");
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Clean variables needed for input in movement
-    /// </summary>
-    private void CleanInput()
-    {
-        input_x = 0.0f;
-        input_y = 0.0f;
-    }
-
     /// <summary>
     /// Change actual sprite to class sprite
     /// </summary>
@@ -131,31 +105,4 @@ public class PlayerNexus : MonoBehaviour
         sprite_renderer.sprite = my_class.GetSprite();
     }
 
-    //-------------------------------------------------
-    //-------COROUTINE---------------------------------
-    //-------------------------------------------------
-    /// <summary>
-    /// Wait for keyboard input
-    /// </summary>
-    /// <returns></returns>
-    IEnumerator WaitForMovementInput()
-    {
-        while (input_x == 0.0f & input_y == 0.0f)
-        {
-            input_x = Input.GetAxis("Horizontal");
-            input_y = Input.GetAxis("Vertical");
-
-            yield return null;
-        }
-    }
-
-    IEnumerator UpdatePosition()
-    {
-        while (!pos_ok)
-        {
-            pos_ok = this.move.getPosOriDest();
-            yield return null;
-        }
-        position = this.move.getDestination();
-    }
 }

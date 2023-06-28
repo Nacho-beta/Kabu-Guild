@@ -49,7 +49,7 @@ public class Kobold : MonsterType
     /// </summary>
     override public void NewSprite()
     {
-        this.sprites = Resources.LoadAll<Sprite>("kobold");
+        this.sprites = Resources.LoadAll<Sprite>("goblin_idle");
         this.sprites_size = this.sprites.Length;
     }
 }

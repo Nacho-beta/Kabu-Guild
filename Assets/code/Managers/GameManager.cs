@@ -361,7 +361,6 @@ public class GameManager : MonoBehaviour
                     enemy_to_update.InitTurn();
                 }
 
-
                 // Check if player move
                 if (player_move_happen)
                 {
