@@ -59,7 +59,7 @@ public class Warrior : Class
     // NewSprite: Change Sprite to Warrior Sprite
     override public void NewSprite() 
     {
-        this.sprites = Resources.LoadAll<Sprite>("warrior");
+        this.sprites = Resources.LoadAll<Sprite>("player_idle");
         this.sprites_size = this.sprites.Length;
     }
 

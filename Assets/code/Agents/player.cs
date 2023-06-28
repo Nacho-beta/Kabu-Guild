@@ -19,7 +19,8 @@ public class Player : MonoBehaviour
     private string name_agent;  // Name of the Agent
     private bool pos_ok,        // Bool indicate if current position and value of position it's ok
                  facing_left,   // Bool that indicate if is facing to left or right
-                 input_mouse_ok;// Bool represents if is reading input for mouse
+                 input_mouse_ok,// Bool represents if is reading input for mouse
+                 animation_end; // Bool represents if animation of death end
 
     // Array Var
     public Vector2 position;        // Vector2 (x,y) for position of agent
@@ -32,6 +33,7 @@ public class Player : MonoBehaviour
     private SpriteRenderer sprite_renderer; // Sprite Renderer
     private BoxCollider2D hitbox;           // Hit box
     private MapManager map;                 // Map of the Game
+    public Animator animator;               // Animator controller
 
 
     /*
@@ -58,6 +60,7 @@ public class Player : MonoBehaviour
         pos_ok = false;
         facing_left = false;
         input_mouse_ok = false;
+        animation_end = false;
 
         // Array Var
         position = new Vector2(-0.5f, -0.25f);
@@ -145,6 +148,8 @@ public class Player : MonoBehaviour
 
     public Attack GetAttack() { return my_class.Attack(); }
 
+    public bool GetAnimationEnd() { return animation_end; }
+
     //-------SETTERS-----------------------------------   
     // Action actual
     public void SetAction(Actions act) { action_actual = act; }
@@ -159,10 +164,14 @@ public class Player : MonoBehaviour
     }
 
 
+    //------------------------------------------------- 
     //-------PUBLIC------------------------------------ 
-    
-    
-    // Move: Move agent using control
+    //-------------------------------------------------    
+
+    /// <summary>
+    /// Move agent using controls
+    /// </summary>
+    /// <returns>True if player moved, false in other case</returns>
     public bool Move()
     {
         Vector2 old_pos = new Vector2(position.x, position.y),
@@ -197,6 +206,8 @@ public class Player : MonoBehaviour
             move_happen = this.move.Move(ref position, target, ref facing_left, name_agent);
             if (move_happen)
             {
+                animator.SetFloat("Speed", 1);
+
                 pos_ok = false;
 
                 // Pos relative to map
@@ -279,9 +290,29 @@ public class Player : MonoBehaviour
     {
         this.CleanInput();
 
-        this.action_actual = Actions.none;        
+        this.action_actual = Actions.none;
+
+        this.animation_end = false;
     }
 
+    /// <summary>
+    /// Receive the attack
+    /// </summary>
+    /// <param name="atck"> Attack to receive </param>
+    public bool ReceiveAttack(Attack atck)
+    {
+        this.hp -= atck.GetDamage();
+        if (this.hp <= 0)
+        {
+            animator.SetBool("Dead", true);
+            StartCoroutine("WaitForDeathAnimation");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     /*
      * Coroutines
@@ -319,24 +350,35 @@ public class Player : MonoBehaviour
             yield return null;
         }
         input_mouse_ok = true;
-        print("Pos del raton: " + input_mouse);
     }
 
     // UpdatePosition: Call get method for movement to update the position
     IEnumerator UpdatePosition()
     {
         while (!pos_ok)
-        {
+        {            
             pos_ok = this.move.getPosOriDest();            
-            yield return null;
-        }        
+            yield return null;            
+        }
+        
         position = this.move.getDestination();
         this.move_made++;
 
         if(this.move_made >= max_move-1)
         {
+            animator.SetFloat("Speed", 0);
             action_actual = Actions.pass_turn;
             this.move_made = 0;
         }
+    }
+
+    IEnumerator WaitForDeathAnimation()
+    {
+        while(!this.animator.GetCurrentAnimatorStateInfo(0).IsName("player_dead"))
+        {
+            yield return new WaitForSeconds(0.6f);
+        }
+
+        animation_end = true;
     }
 }
