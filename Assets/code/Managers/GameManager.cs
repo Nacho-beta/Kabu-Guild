@@ -426,12 +426,12 @@ public class GameManager : MonoBehaviour
             if (player.GetAnimationEnd())
             {
                 ret_state = GameState.game_start;
-                SceneManager.LoadScene("Nexo");
+                SceneManager.LoadScene("MainMenu");
             }
         }
         else
         {
-            SceneManager.LoadScene("Nexo");
+            SceneManager.LoadScene("MainMenu");
         }
        
         return ret_state;
