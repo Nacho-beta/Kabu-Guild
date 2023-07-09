@@ -22,7 +22,8 @@ public class PlayerNexus : MonoBehaviour
     private Class my_class;
     private SpriteRenderer sprite_renderer; // Sprite Renderer
     private BoxCollider2D hitbox;           // Hit box
-    private Rigidbody2D rb; 
+    private Rigidbody2D rb;
+    public Animator animator;
 
     /*
      * ------------------------------------------------------
@@ -66,7 +67,11 @@ public class PlayerNexus : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        RaycastHit2D hit;
+        LayerMask mask_wall = new LayerMask();
         Vector3 target = new Vector3();
+        Vector2 direction = new Vector2(),
+                pos = new Vector2();
 
         movement_direction = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         if(movement_direction.x != 0)
@@ -80,17 +85,39 @@ public class PlayerNexus : MonoBehaviour
 
         if(movement_direction.x != 0 | movement_direction.y !=0)
         {
-            target.x = this.transform.position.x + movement_direction.x*speed;
-            target.y = this.transform.position.y + movement_direction.y*speed;
-            target.z = this.transform.position.z;
+            animator.SetFloat("Speed", 1);
+            pos.x = this.transform.position.x;
+            pos.y = this.transform.position.y;
+            
+            target.x = this.transform.position.x + movement_direction.x * speed;
+            target.y = this.transform.position.y + movement_direction.y * speed;
+            
+            direction.x = target.x - pos.x;
+            direction.y = target.y - pos.y;
 
-            this.transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+            mask_wall = LayerMask.GetMask("Wall", "Item");
+
+            hit = Physics2D.Raycast(pos, direction, 1.0f, mask_wall);
+            if (hit.collider != null)
+            {
+                print("Colision detectada");
+                movement_direction.x = 0; movement_direction.y = 0;                
+            }
+            else
+            {
+                print("Sin colision");
+                movement_direction.x *= speed;
+                movement_direction.y *= speed;
+            }
+        }
+        else
+        {
+            animator.SetFloat("Speed", 0);
         }
     }
 
     void FixedUpdate()
-    {
-        
+    {        
         rb.velocity = movement_direction;
     }
 

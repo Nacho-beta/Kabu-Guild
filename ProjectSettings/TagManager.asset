@@ -12,6 +12,7 @@ TagManager:
   - Communication
   - Map
   - Floor
+  - BackMenu
   layers:
   - Default
   - TransparentFX
